@@ -7,9 +7,42 @@ body {
 body {
     background-image: url("../images/maybach2.svg");
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: top;
     background-size: 10%;
 }
+
+.bank {
+    font-size: 2vh;
+}
+
+.lamda {
+    font-size: 8vh;
+}
+
+.volt {
+    font-size: 3.5vh;
+}
+
+@media only screen and (min-width: 768px) {
+    /* For desktop: */
+    body {
+        background-position: center;
+    }
+
+    .bank {
+        font-size: 2vw;
+    }
+    
+    .lamda {
+        font-size: 8vw;
+    }
+    
+    .volt {
+        font-size: 3.5vw;
+    }
+}
+
+/* ========= Switch oben links ========= */
 
 /* The switch - the box around the slider */
 .switch {
@@ -73,3 +106,5 @@ body {
   .slider.round:before {
     border-radius: 50%;
   }
+
+  /* =========================== */
