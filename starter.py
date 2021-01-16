@@ -54,7 +54,7 @@ def connected(json, methods=['GET', 'POST']):
     if not thread.isAlive():
         print("Starting Thread")
         thread_stop_event.clear()
-        # thread = socketio.start_background_task(updateData, 1)
+        thread = socketio.start_background_task(updateData, 1)
 
 @socketio.on('disconnect')
 def disconnect():
