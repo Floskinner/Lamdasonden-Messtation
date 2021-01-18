@@ -25,7 +25,8 @@ def updateData(interval):
         socketio.emit("newValues", data, broadcast=True)
         print(data)
         time.sleep(interval)
-
+        
+        
 
 @app.route("/")
 def index():
@@ -71,5 +72,16 @@ def disconnect():
 
         print('Stopped thread')
 
+
+@socketio.on('recording')
+def recording(json):
+    if json["recording"]:
+        #aufnehmen
+        print("start aufnahme")
+    else:
+        #stoppen
+        print("stoppe Aufnahme")
+    
+
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=8081, host='192.168.0.200')
+    socketio.run(app, debug=True, port=8081, host='192.168.0.30')
