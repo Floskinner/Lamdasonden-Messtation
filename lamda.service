@@ -1,0 +1,12 @@
+# Contents of /etc/systemd/system/lamda.service
+[Unit]
+Description=Service for Lamda-Web
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/home/pi/.local/bin/gunicorn -c /home/pi/lamdaProjekt/gunicorn.conf.py starter:app
+
+[Install]
+WantedBy=multi-user.target
