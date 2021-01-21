@@ -11,7 +11,7 @@ class GPIO_Reader(object):
 
     def getVoltage(self, channel):
         value = self.adc.read( channel )
-        voltage = value / 1023.0 * 3.3 
+        voltage = value / 1023.0 * 3.3
         return round(voltage, 3)
 
     def getLamda(self, channel):
@@ -21,9 +21,9 @@ class GPIO_Reader(object):
     
     def getData(self):
         data = {
-            "lamda1" : self.getLamda(channel = 1),
-            "lamda2" : self.getLamda(channel = 2),
-            "voltage1" : self.getVoltage(channel = 1),
-            "voltage2" : self.getVoltage(channel = 2)
+            "lamda1" : self.getLamda(channel = 0),
+            "lamda2" : self.getLamda(channel = 1),
+            "voltage1" : self.getVoltage(channel = 0),
+            "voltage2" : self.getVoltage(channel = 1)
         }
         return data
