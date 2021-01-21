@@ -63,6 +63,8 @@
 
 <script type="text/javascript" charset="utf-8">
 
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
     $( "#recording" ).change(function() {
         if($("#recording").prop( "checked" )) {
             socket.emit("recording", {
@@ -74,8 +76,6 @@
             });
         }
     });
-
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
 
     socket.on('connect', function () {
         socket.emit('connected', {
