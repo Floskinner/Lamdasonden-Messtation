@@ -27,7 +27,7 @@ def updateData(interval):
     while not thread_stop_event.isSet():
         data = gpio.getData()
         socketio.emit("newValues", data, broadcast=True)
-        print(data)
+        # print(data)
 
         if isRecording:
             json_body = [
@@ -47,7 +47,7 @@ def updateData(interval):
 
             client.write_points(json_body)
             result = client.query('select Lamda_1 from lamdawerte;')
-            print("Result: {0}".format(result))
+            # print("Result: {0}".format(result))
 
         time.sleep(interval)
 
