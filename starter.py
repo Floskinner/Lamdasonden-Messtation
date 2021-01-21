@@ -111,4 +111,5 @@ def recording(json):
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=8081, host='192.168.0.30')
+    #socketio.run(app, debug=True, port=8080, host='0.0.0.0')
+    pass
