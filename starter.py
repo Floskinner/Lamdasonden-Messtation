@@ -18,6 +18,7 @@ thread_stop_event = Event()
 
 connectionsCounter = 0
 isRecording = False
+messInterval = 0.01     # in Sekunden
 
 client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
                   password='password', database='lamdawerte')
@@ -45,13 +46,17 @@ def updateData(interval):
                 }
             ]
 
-            client.write_points(json_body)
-            result = client.query('select Lamda_1 from lamdawerte;')
-            # print("Result: {0}".format(result))
+            thread = threading.Thread(target=writeToDB, args=(json_body), daemon=True)
 
         time.sleep(interval)
 
 
+    def writeToDB(data):
+        client.write_points(json_body)
+        # result = client.query('select Lamda_1 from lamdawerte;')
+        # print("Result: {0}".format(result))
+    
+    
 @app.route("/")
 def index():
 
@@ -78,7 +83,7 @@ def connected(json, methods=['GET', 'POST']):
     if not thread.isAlive():
         print("Starting Thread")
         thread_stop_event.clear()
-        thread = socketio.start_background_task(updateData, 1)
+        thread = socketio.start_background_task(updateData, messInterval)
 
 
 @socketio.on('disconnect')
