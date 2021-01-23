@@ -2,14 +2,14 @@
 [Unit]
 Description=Service for Lamda-Web
 After=network.target influxdb.service
-User=pi
 
 [Service]
+User=pi
 Type=simple
 Restart=always
 WorkingDirectory=/home/pi/lamdaProjekt
 Environment="PATH=/home/pi/lamdaProjekt/lamda_env/bin"
-ExecStart=/home/pi/lamdaProjekt/lamda_env/bin/gunicorn-c gunicorn.conf.py starter:app
+ExecStart=/home/pi/lamdaProjekt/lamda_env/bin/gunicorn -c gunicorn.conf.py starter:app
 
 [Install]
 WantedBy=multi-user.target
