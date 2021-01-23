@@ -24,6 +24,11 @@ client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
                   password='password', database='lamdawerte')
 
 
+# Clean data from DB older than 6 Months
+timeString = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y-%m-%d")
+query = "DELETE WHERE time < '" + timeString + "'"
+result = client.query(query)
+
 def updateData(interval):
     while not thread_stop_event.isSet():
         data = gpio.getData()
@@ -31,7 +36,14 @@ def updateData(interval):
         # print(data)
 
         if isRecording:
-            json_body = [
+            recordThread = Thread(target=writeToDB, args=(data,), daemon=True)
+            recordThread.start()
+
+        time.sleep(interval)
+
+
+def writeToDB(data):
+    json_body = [
                 {
                     "measurement": "lamdawerte",
                     "tags": {
@@ -46,15 +58,9 @@ def updateData(interval):
                 }
             ]
 
-            thread = threading.Thread(target=writeToDB, args=(json_body), daemon=True)
-
-        time.sleep(interval)
-
-
-    def writeToDB(data):
-        client.write_points(json_body)
-        # result = client.query('select Lamda_1 from lamdawerte;')
-        # print("Result: {0}".format(result))
+    client.write_points(json_body)
+    # result = client.query('select Lamda_1 from lamdawerte;')
+    # print("Result: {0}".format(result))
     
     
 @app.route("/")
