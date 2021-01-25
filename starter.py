@@ -67,10 +67,10 @@ def writeToDB(data):
 def index():
 
     now = datetime.datetime.now()
-    timeString = now.strftime("%m.%Y")
+    timeString = now.strftime("%Y")
 
     templateData = {
-        'currentMonthYear': timeString
+        'currentYear': timeString
     }
 
     return render_template('index.html', **templateData)
@@ -102,8 +102,12 @@ def disconnect():
 
     if connectionsCounter == 0:
         # Stop Thread
+        # Stop Aufnahme
         global thread_stop_event
+        global isRecording
+
         thread_stop_event.set()
+        isRecording = False
 
         print('Stopped thread')
 
