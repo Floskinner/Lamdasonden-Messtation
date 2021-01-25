@@ -4,7 +4,7 @@ Description=Service for Lamda-Web
 After=network.target influxdb.service
 
 [Service]
-User=pi
+User=root
 Type=simple
 Restart=always
 WorkingDirectory=/home/pi/lamdaProjekt
