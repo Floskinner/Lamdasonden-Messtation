@@ -88,7 +88,7 @@ def connected(json, methods=['GET', 'POST']):
     global connectionsCounter
 
     dateString = json['data']
-    timeBefehl = "date -s " + str(dateString)
+    timeBefehl = "/usr/bin/date -s " + str(dateString)
     os.system(timeBefehl)
 
     print('Client connected')
