@@ -67,15 +67,16 @@
 
     $( "#recording" ).change(function() {
         if($("#recording").prop( "checked" )) {
+
             // Hide Button wenn aufgenommen wird
-            $('#btnHistory').hide();
+            $('#btnHistory').hide("slow");
 
             socket.emit("recording", {
                  "recording": true
             });
         } else {
             // Show Button wenn aufgenommen stoppt
-            $('#btnHistory').show();
+            $('#btnHistory').show("slow");
 
             socket.emit("recording", { 
                 "recording": false
@@ -84,8 +85,10 @@
     });
 
     socket.on('connect', function () {
+        let browserTime = new Date().toISOString()
+
         socket.emit('connected', {
-            data: 'User Connected'
+            data: browserTime
         })
 
     })

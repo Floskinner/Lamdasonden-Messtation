@@ -7,6 +7,7 @@ from influxdb import InfluxDBClient
 
 import time
 import datetime
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -27,6 +28,7 @@ client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
 # Clean data from DB older than 6 Months
 timeString = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y-%m-%d")
 query = "DELETE WHERE time < '" + timeString + "'"
+print("Delete Data older than ", timeString)
 result = client.query(query)
 
 def updateData(interval):
@@ -38,8 +40,10 @@ def updateData(interval):
         if isRecording:
             recordThread = Thread(target=writeToDB, args=(data,), daemon=True)
             recordThread.start()
+            time.sleep(0.5)         #Bei aufnahme nurnoch alle 0,5 Sekunden
 
-        time.sleep(interval)
+        else:
+            time.sleep(interval)
 
 
 def writeToDB(data):
@@ -58,7 +62,7 @@ def writeToDB(data):
                 }
             ]
 
-    client.write_points(json_body)
+    client.write_points(json_body, time_precision="ms")
     # result = client.query('select Lamda_1 from lamdawerte;')
     # print("Result: {0}".format(result))
     
@@ -82,6 +86,10 @@ def connected(json, methods=['GET', 'POST']):
     global thread
     global thread_stop_event
     global connectionsCounter
+
+    dateString = json['data']
+    timeBefehl = "date -s " + str(dateString)
+    os.system(timeBefehl)
 
     print('Client connected')
     connectionsCounter += 1
@@ -118,7 +126,7 @@ def recording(json):
     
     if json["recording"]:
         isRecording = True
-        print("start aufnahme", isRecording)
+        print("start aufnahme")
     else:
         # stoppen
         isRecording = False
