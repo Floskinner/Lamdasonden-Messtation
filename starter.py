@@ -7,14 +7,14 @@ import os
 
 from threading import Thread, Event
 
-import raspi_status as pi
 
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
 
-from GPIO import GPIO_Reader
 from influxdb import InfluxDBClient
+from GPIO import GPIO_Reader
 
+import raspi_status as pi
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -113,9 +113,9 @@ def connected(json, methods=['GET', 'POST']):
     global thread_stop_event
     global CONNECTIONS_COUNTER
 
-    dateString = json['data']
-    timeBefehl = "/usr/bin/date -s " + str(dateString)
-    os.system(timeBefehl)
+    date_string = json['data']
+    time_befehl = "/usr/bin/date -s " + str(date_string)
+    os.system(time_befehl)
 
     print('Client connected')
     CONNECTIONS_COUNTER += 1
