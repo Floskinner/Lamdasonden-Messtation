@@ -1,13 +1,18 @@
+"""
+Modul das von Gunicorn verwendet wird um den Server zu starten
+"""
+import time
+import datetime
+import os
+
+from threading import Thread, Event
+
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
 
 from GPIO import GPIO_Reader
-from threading import Thread, Event
 from influxdb import InfluxDBClient
 
-import time
-import datetime
-import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -17,12 +22,12 @@ gpio = GPIO_Reader()
 thread = Thread()
 thread_stop_event = Event()
 
-connectionsCounter = 0
-isRecording = False
-messInterval = 0.01     # in Sekunden
+CONNECTIONS_COUNTER = 0
+IS_RECORDING = False
+MESSINTERVAL = 0.3     # in Sekunden
 
 client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
-                  password='password', database='lamdawerte')
+                        password='password', database='lamdawerte')
 
 
 # Clean data from DB older than 6 Months
@@ -31,16 +36,17 @@ query = "DELETE WHERE time < '" + timeString + "'"
 print("Delete Data older than ", timeString)
 result = client.query(query)
 
+
 def updateData(interval):
     while not thread_stop_event.isSet():
         data = gpio.getData()
         socketio.emit("newValues", data, broadcast=True)
         # print(data)
 
-        if isRecording:
-            recordThread = Thread(target=writeToDB, args=(data,), daemon=True)
-            recordThread.start()
-            time.sleep(0.5)         #Bei aufnahme nurnoch alle 0,5 Sekunden
+        if IS_RECORDING:
+            record_thread = Thread(target=writeToDB, args=(data,), daemon=True)
+            record_thread.start()
+            time.sleep(0.5)  # Bei aufnahme nurnoch alle 0,5 Sekunden
 
         else:
             time.sleep(interval)
@@ -48,25 +54,25 @@ def updateData(interval):
 
 def writeToDB(data):
     json_body = [
-                {
-                    "measurement": "lamdawerte",
-                    "tags": {
-                        "Car": "IEinAutoTag"
-                    },
-                    "fields": {
-                        "Lamda_1": data["lamda1"],
-                        "Voltage_1": data["voltage1"],
-                        "Lamda_2": data["lamda2"],
-                        "Voltage_2": data["voltage2"]
-                    }
-                }
-            ]
+        {
+            "measurement": "lamdawerte",
+            "tags": {
+                "Car": "IEinAutoTag"
+            },
+            "fields": {
+                "Lamda_1": data["lamda1"],
+                "Voltage_1": data["voltage1"],
+                "Lamda_2": data["lamda2"],
+                "Voltage_2": data["voltage2"]
+            }
+        }
+    ]
 
     client.write_points(json_body, time_precision="ms")
     # result = client.query('select Lamda_1 from lamdawerte;')
     # print("Result: {0}".format(result))
-    
-    
+
+
 @app.route("/")
 def index():
 
@@ -80,56 +86,61 @@ def index():
     return render_template('index.html', **templateData)
 
 
+@app.route("/system")
+def system():
+    return render_template('system.html')
+
+
 @socketio.on('connected')
 def connected(json, methods=['GET', 'POST']):
 
     global thread
     global thread_stop_event
-    global connectionsCounter
+    global CONNECTIONS_COUNTER
 
     dateString = json['data']
     timeBefehl = "/usr/bin/date -s " + str(dateString)
     os.system(timeBefehl)
 
     print('Client connected')
-    connectionsCounter += 1
+    CONNECTIONS_COUNTER += 1
 
     if not thread.isAlive():
         print("Starting Thread")
         thread_stop_event.clear()
-        thread = socketio.start_background_task(updateData, messInterval)
+        thread = socketio.start_background_task(updateData, MESSINTERVAL)
 
 
 @socketio.on('disconnect')
 def disconnect():
 
-    global connectionsCounter
+    global CONNECTIONS_COUNTER
 
     print('Client disconnected')
-    connectionsCounter -= 1
+    CONNECTIONS_COUNTER -= 1
 
-    if connectionsCounter == 0:
+    if CONNECTIONS_COUNTER == 0:
         # Stop Thread
         # Stop Aufnahme
         global thread_stop_event
-        global isRecording
+        global IS_RECORDING
 
         thread_stop_event.set()
-        isRecording = False
+        IS_RECORDING = False
 
         print('Stopped thread')
 
 
 @socketio.on('recording')
 def recording(json):
-    global isRecording
-    
+    global IS_RECORDING
+
     if json["recording"]:
-        isRecording = True
+        IS_RECORDING = True
         print("start aufnahme")
     else:
         # stoppen
-        isRecording = False
+        IS_RECORDING = False
         print("stoppe Aufnahme")
 
 
