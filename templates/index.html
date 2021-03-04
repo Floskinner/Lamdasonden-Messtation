@@ -27,7 +27,10 @@
             </label>
         </div>
         <div class="w3-cell w3-hide-small">
-            <button id="btnHistory" class="w3-button w3-round-large w3-border" onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
+            <button id="btnHistory" class="w3-button w3-round-large w3-border" style="margin-right: 5px;" onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
+        </div>
+        <div class="w3-cell w3-hide-small">
+            <button class="w3-button w3-round-large w3-border" onclick="location.href='http://192.168.1.1:80/system';">System</button>
         </div>
     </div>
 
@@ -69,14 +72,14 @@
         if($("#recording").prop( "checked" )) {
 
             // Hide Button wenn aufgenommen wird
-            $('#btnHistory').hide("slow");
+            $(':button').hide("slow");
 
             socket.emit("recording", {
                  "recording": true
             });
         } else {
             // Show Button wenn aufgenommen stoppt
-            $('#btnHistory').show("slow");
+            $(':button').show("slow");
 
             socket.emit("recording", { 
                 "recording": false
