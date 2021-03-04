@@ -7,6 +7,8 @@ import os
 
 from threading import Thread, Event
 
+import raspi_status as pi
+
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
 
@@ -80,7 +82,7 @@ def index():
     timeString = now.strftime("%Y")
 
     templateData = {
-        'currentYear': timeString
+        'current_year': timeString
     }
 
     return render_template('index.html', **templateData)
@@ -88,7 +90,20 @@ def index():
 
 @app.route("/system")
 def system():
-    return render_template('system.html')
+    system_data = {
+        "os_version": pi.get_os_version(),
+        "os_name": pi.get_hotname_ip(),
+        "os_cpu": pi.get_cpu_usage(),
+        "os_temperatur": pi.get_cpu_temp(),
+        "os_ram_total": pi.get_ram_info().get("ram_total"),
+        "os_ram_available": pi.get_ram_info().get("ram_available"),
+        "os_ram_percent": pi.get_ram_info().get("ram_free_percent"),
+        "os_disk_total": pi.get_disk_info().get("total"),
+        "os_disk_used": pi.get_disk_info().get("used"),
+        "os_disk_free": pi.get_disk_info().get("free"),
+        "os_disk_free_percent": pi.get_disk_info().get("percent"),
+    }
+    return render_template('system.html', **system_data)
 
 
 @socketio.on('connected')
