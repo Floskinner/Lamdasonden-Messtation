@@ -4,6 +4,7 @@ Modul das von Gunicorn verwendet wird um den Server zu starten
 import time
 import datetime
 import os
+import sys
 
 from threading import Thread, Event
 
@@ -15,6 +16,7 @@ from influxdb import InfluxDBClient
 from GPIO import GPIO_Reader
 
 import raspi_status as pi
+from globale_variablen import MESSINTERVAL, DB_DELETE_AELTER_ALS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -26,17 +28,14 @@ thread_stop_event = Event()
 
 CONNECTIONS_COUNTER = 0
 IS_RECORDING = False
-MESSINTERVAL = 0.3     # in Sekunden
 
 client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
                         password='password', database='lamdawerte')
 
 
-# Clean data from DB older than 6 Months
-timeString = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y-%m-%d")
-query = "DELETE WHERE time < '" + timeString + "'"
-print("Delete Data older than ", timeString)
-result = client.query(query)
+def write_to_systemd(message: str):
+    print(message)
+    sys.stdout.flush()
 
 
 def updateData(interval):
@@ -55,6 +54,7 @@ def updateData(interval):
 
 
 def writeToDB(data):
+    # TODO: Datenbank neu erstellen und cleanen / Grafana anpassen
     json_body = [
         {
             "measurement": "lamdawerte",
@@ -63,9 +63,9 @@ def writeToDB(data):
             },
             "fields": {
                 "Lamda_1": data["lamda1"],
-                "Voltage_1": data["voltage1"],
+                "AFR_1": data["afr1"],
                 "Lamda_2": data["lamda2"],
-                "Voltage_2": data["voltage2"]
+                "AFR_2": data["afr2"]
             }
         }
     ]
@@ -117,11 +117,11 @@ def connected(json, methods=['GET', 'POST']):
     time_befehl = "/usr/bin/date -s " + str(date_string)
     os.system(time_befehl)
 
-    print('Client connected')
+    write_to_systemd('Client connected')
     CONNECTIONS_COUNTER += 1
 
     if not thread.isAlive():
-        print("Starting Thread")
+        write_to_systemd("Starting Thread")
         thread_stop_event.clear()
         thread = socketio.start_background_task(updateData, MESSINTERVAL)
 
@@ -131,7 +131,7 @@ def disconnect():
 
     global CONNECTIONS_COUNTER
 
-    print('Client disconnected')
+    write_to_systemd('Client disconnected')
     CONNECTIONS_COUNTER -= 1
 
     if CONNECTIONS_COUNTER == 0:
@@ -143,7 +143,7 @@ def disconnect():
         thread_stop_event.set()
         IS_RECORDING = False
 
-        print('Stopped thread')
+        write_to_systemd('Stopped thread')
 
 
 @socketio.on('recording')
@@ -152,13 +152,20 @@ def recording(json):
 
     if json["recording"]:
         IS_RECORDING = True
-        print("start aufnahme")
+        write_to_systemd("start aufnahme")
     else:
         # stoppen
         IS_RECORDING = False
-        print("stoppe Aufnahme")
+        write_to_systemd("stoppe Aufnahme")
 
 
 if __name__ == "__main__":
     #socketio.run(app, debug=True, port=8080, host='0.0.0.0')
     pass
+
+
+# Clean data from DB older than 6 Months
+timeString = (datetime.datetime.now() - datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
+query = "DELETE WHERE time < '" + timeString + "'"
+write_to_systemd(f"Delete Data older than {timeString}")
+result = client.query(query)
