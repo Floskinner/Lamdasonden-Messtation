@@ -1,5 +1,9 @@
 # Dokumentation des Projektes "MAMA" / Lamdasonden-Messtation
-Dies dient zur nachverfolgung und Dokumentation des Projektes
+Dies dient zur nachverfolgung und Dokumentation des Projektes<br>
+Logs können mit folgendem Befehl angeschaut werden
+```bash
+sudo journalctl -u lamda.service -f
+```
 
 ## Raspberry Pi
 Produkte:
