@@ -42,14 +42,14 @@
         <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
             <p class="bank">Bank 1</p>
             <p id="lamda1" class="lamda">9,999 &lambda;</p>
-            <p id="afr1" class="afr">9,999</p>
+            <p id="afr1" class="afr">9,999 AFR</p>
         </div>
 
         <!-- Rechte Seite / Bank 2 -->
         <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
             <p class="bank">Bank 2</p>
             <p id="lamda2" class="lamda">9,999 &lambda;</p>
-            <p id="afr2" class="afr">9,999</p>
+            <p id="afr2" class="afr">9,999 AFR</p>
         </div>
     </div>
 
@@ -110,8 +110,39 @@
 
         $('#lamda1').html(values.lamda1.toFixed(3) + " &lambda;");
         $('#lamda2').html(values.lamda2.toFixed(3) + " &lambda;");
-        $('#afr1').html(values.afr1.toFixed(3));
-        $('#afr2').html(values.afr2.toFixed(3));
+        $('#afr1').html(values.afr1.toFixed(2) + " AFR");
+        $('#afr2').html(values.afr2.toFixed(2) + " AFR");
+
+        console.log("Volt 1: " + values.volt1);
+        console.log("Volt 2: " + values.volt2);
+
+        // Sind die Werte von Lamda entsprechend, wird der Text erst Orange und dann Rot
+        if (values.lamda1 >= 1.12 || values.lamda1 <= 0.86) {
+            if (values.lamda1 >= 1.20 || values.lamda1 <= 0.80) {
+                $('#lamda1').css("color", "#b30000")
+                // $('#afr1').css("color", "#b30000")
+            } else {
+                $('#lamda1').css("color", "#e36f27")
+                // $('#afr1').css("color", "#e36f27")
+            }
+        } else {
+            $('#lamda1').css("color", "#000000")
+            // $('#afr1').css("color", "#000000")
+        }
+
+        if (values.lamda2 >= 1.12 || values.lamda2 <= 0.86) {
+            if (values.lamda2 >= 1.20 || values.lamda2 <= 0.80) {
+                $('#lamda2').css("color", "#b30000")
+                // $('#afr2').css("color", "#b30000")
+            } else {
+                $('#lamda2').css("color", "#e36f27")
+                // $('#afr2').css("color", "#e36f27")
+            }
+        } else {
+            $('#lamda2').css("color", "#000000")
+            // $('#afr2').css("color", "#000000")
+        }
 
     })
+
 </script>
