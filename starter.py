@@ -10,7 +10,7 @@ from threading import Thread, Event
 
 
 from flask import Flask, render_template
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO
 
 from influxdb import InfluxDBClient
 from GPIO import GPIO_Reader
@@ -22,9 +22,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-gpio = GPIO_Reader()
-thread = Thread()
-thread_stop_event = Event()
+GPIO = GPIO_Reader()
+THREAD = Thread()
+THREAD_STOP_EVENT = Event()
 
 CONNECTIONS_COUNTER = 0
 IS_RECORDING = False
@@ -34,18 +34,30 @@ client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
 
 
 def write_to_systemd(message: str):
+    """Übergebene Nachrichten werden auf die Konsole ausgegeben mit print und anschließend 
+    erfolgt sys.stdout.flush(). Dadurch werden alle Ausgaben direkt in die systemd Logs eingetragen
+
+    Args:
+        message (str): Nachricht welche auf der Konsole / systemd Log erscheinen soll
+    """
     print(message)
     sys.stdout.flush()
 
 
-def updateData(interval):
-    while not thread_stop_event.isSet():
-        data = gpio.getData()
+def update_data(interval: float):
+    """Daten werden vom GPIO neu ausgelesen und zur Webseite übertragen
+    Ist aktuell eine Aufnahme am start, so wird  0.5 Sekunden geschlafen
+
+    Args:
+        interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
+    """
+    while not THREAD_STOP_EVENT.isSet():
+        data = GPIO.getData()
         socketio.emit("newValues", data, broadcast=True)
         # print(data)
 
         if IS_RECORDING:
-            record_thread = Thread(target=writeToDB, args=(data,), daemon=True)
+            record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
             record_thread.start()
             time.sleep(0.5)  # Bei aufnahme nurnoch alle 0,5 Sekunden
 
@@ -53,8 +65,13 @@ def updateData(interval):
             time.sleep(interval)
 
 
-def writeToDB(data):
-    # TODO: Datenbank neu erstellen und cleanen / Grafana anpassen
+def write_to_db(data: dict):
+    """Erstellt einen neuen Eintrag in der Datenbank
+
+    Args:
+        data (dict): Folgende Keys müssen vorhaben sein: ["lamda1"], ["lamda2"], ["afr1"], ["afr2"]
+    """
+
     json_body = [
         {
             "measurement": "lamdawerte",
@@ -77,19 +94,25 @@ def writeToDB(data):
 
 @app.route("/")
 def index():
-
+    """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/" aufgerufen wird
+    Rendert und gibt das Template index.html zurück
+    """
     now = datetime.datetime.now()
-    timeString = now.strftime("%Y")
+    current_year = now.strftime("%Y")
 
-    templateData = {
-        'current_year': timeString
+    template_data = {
+        'current_year': current_year
     }
 
-    return render_template('index.html', **templateData)
+    return render_template('index.html', **template_data)
 
 
 @app.route("/system")
 def system():
+    """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/system" aufgerufen wird
+    Rendert und gibt das Template system.html zurück
+    """
+
     system_data = {
         "os_version": pi.get_os_version(),
         "os_name": pi.get_hotname_ip(),
@@ -103,14 +126,22 @@ def system():
         "os_disk_free": pi.get_disk_info().get("free"),
         "os_disk_free_percent": pi.get_disk_info().get("percent"),
     }
+
     return render_template('system.html', **system_data)
 
 
 @socketio.on('connected')
-def connected(json, methods=['GET', 'POST']):
+def connected(json: dict):
+    """Sobald eine Verbindung mit dem Socket aufgebaut wird, startet die Methode den Thread für das
+    updaten der Daten. Zudem setzt sie die Systemzeit gleich der Browserzeit,
+    damit beim aufzeichnen der Daten die richtigen Uhrzeiten verwendet werden
 
-    global thread
-    global thread_stop_event
+    Args:
+        json (dict): Key ["data"] welcher die Uhrzeit als ISO 8601 String enthält
+    """
+
+    global THREAD
+    global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
 
     date_string = json['data']
@@ -120,15 +151,17 @@ def connected(json, methods=['GET', 'POST']):
     write_to_systemd('Client connected')
     CONNECTIONS_COUNTER += 1
 
-    if not thread.isAlive():
+    if not THREAD.isAlive():
         write_to_systemd("Starting Thread")
-        thread_stop_event.clear()
-        thread = socketio.start_background_task(updateData, MESSINTERVAL)
+        THREAD_STOP_EVENT.clear()
+        THREAD = socketio.start_background_task(update_data, MESSINTERVAL)
 
 
 @socketio.on('disconnect')
 def disconnect():
-
+    """Falls keiner mehr mit dem Socket verbunden ist,
+    werden alle Threads (update Data und aufnahme) gestoppt
+    """
     global CONNECTIONS_COUNTER
 
     write_to_systemd('Client disconnected')
@@ -137,17 +170,22 @@ def disconnect():
     if CONNECTIONS_COUNTER == 0:
         # Stop Thread
         # Stop Aufnahme
-        global thread_stop_event
+        global THREAD_STOP_EVENT
         global IS_RECORDING
 
-        thread_stop_event.set()
+        THREAD_STOP_EVENT.set()
         IS_RECORDING = False
 
         write_to_systemd('Stopped thread')
 
 
 @socketio.on('recording')
-def recording(json):
+def recording(json: dict):
+    """Startet oder stoppt die Aufnahem von Daten, welche in der InfluxDB gespeichert werden
+
+    Args:
+        json (dict): Key ["recording"] mit true oder false
+    """
     global IS_RECORDING
 
     if json["recording"]:
@@ -165,7 +203,8 @@ if __name__ == "__main__":
 
 
 # Clean data from DB older than 6 Months
-timeString = (datetime.datetime.now() - datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
-query = "DELETE WHERE time < '" + timeString + "'"
-write_to_systemd(f"Delete Data older than {timeString}")
+db_delete_time_string = (datetime.datetime.now() -
+               datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
+query = "DELETE WHERE time < '" + db_delete_time_string + "'"
+write_to_systemd(f"Delete Data older than {db_delete_time_string}")
 result = client.query(query)
