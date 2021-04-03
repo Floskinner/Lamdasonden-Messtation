@@ -17,7 +17,7 @@ from influxdb import InfluxDBClient
 from GPIO import GPIO_Reader
 
 import raspi_status as pi
-from globale_variablen import MESSINTERVAL, DB_DELETE_AELTER_ALS
+from globale_variablen import MESSURE_INTERVAL, UPDATE_INTERVAL, DB_DELETE_AELTER_ALS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -53,14 +53,16 @@ def update_data(update_interval: float, messure_interval: float):
         interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
     """
 
+
     sampling_rate = messure_interval
     number_of_lamda_values = round(update_interval / sampling_rate)
 
     while not THREAD_STOP_EVENT.isSet():
 
+
         lamda_values = []
-        for number in range(sampling_rate):
-            lamda_values[number] = GPIO.getData()
+        for number in range(number_of_lamda_values):
+            lamda_values.append(GPIO.getData())
             time.sleep(sampling_rate)
 
         sum_of_lamda1 = 0
@@ -71,12 +73,14 @@ def update_data(update_interval: float, messure_interval: float):
         sum_of_afr2 = 0
 
         for lamda_value in lamda_values:
-            sum_of_lamda1 = + lamda_value["lamda1"]
-            sum_of_lamda2 = + lamda_value["lamda2"]
-            sum_of_volt1 = + lamda_value["volt1"]
-            sum_of_volt2 = + lamda_value["volt2"]
-            sum_of_afr1 = + lamda_value["afr1"]
-            sum_of_afr2 = + lamda_value["afr2"]
+            sum_of_lamda1 += lamda_value["lamda1"]
+            sum_of_lamda2 += lamda_value["lamda2"]
+            sum_of_volt1 += lamda_value["volt1"]
+            sum_of_volt2 += lamda_value["volt2"]
+            sum_of_afr1 += lamda_value["afr1"]
+            sum_of_afr2 += lamda_value["afr2"]
+
+            print(f"VOLT2: {sum_of_volt2}")
 
         data = {
             "lamda1": sum_of_lamda1 / number_of_lamda_values,
@@ -88,7 +92,8 @@ def update_data(update_interval: float, messure_interval: float):
         }
 
         socketio.emit("newValues", data, broadcast=True)
-        # print(data)
+        print(data)
+        sys.stdout.flush()
 
         if IS_RECORDING:
             record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
