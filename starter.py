@@ -62,7 +62,8 @@ def update_data(update_interval: float, messure_interval: float):
 
         lamda_values = []
         for number in range(number_of_lamda_values):
-            lamda_values.append(GPIO.getData())
+            data = GPIO.getData()
+            lamda_values.append(data)
             time.sleep(sampling_rate)
 
         sum_of_lamda1 = 0
@@ -80,8 +81,6 @@ def update_data(update_interval: float, messure_interval: float):
             sum_of_afr1 += lamda_value["afr1"]
             sum_of_afr2 += lamda_value["afr2"]
 
-            print(f"VOLT2: {sum_of_volt2}")
-
         data = {
             "lamda1": sum_of_lamda1 / number_of_lamda_values,
             "lamda2": sum_of_lamda2 / number_of_lamda_values,
@@ -92,8 +91,6 @@ def update_data(update_interval: float, messure_interval: float):
         }
 
         socketio.emit("newValues", data, broadcast=True)
-        print(data)
-        sys.stdout.flush()
 
         if IS_RECORDING:
             record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
