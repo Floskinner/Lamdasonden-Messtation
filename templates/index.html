@@ -40,14 +40,14 @@
     <div class="w3-cell-row" style="height: 90%;">
         <!-- Linke Seite / Bank 1 -->
         <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p class="bank">Bank 1</p>
+            <p id="bank1" class="bank">Bank 1</p>
             <p id="lamda1" class="lamda">9,999 &lambda;</p>
             <p id="afr1" class="afr">9,999 AFR</p>
         </div>
 
         <!-- Rechte Seite / Bank 2 -->
         <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p class="bank">Bank 2</p>
+            <p id="bank2" class="bank">Bank 2</p>
             <p id="lamda2" class="lamda">9,999 &lambda;</p>
             <p id="afr2" class="afr">9,999 AFR</p>
         </div>
@@ -108,10 +108,45 @@
     socket.on('newValues', function (values) {
         // console.log(JSON.stringify(values));
 
-        $('#lamda1').html(values.lamda1.toFixed(3) + " &lambda;");
-        $('#lamda2').html(values.lamda2.toFixed(3) + " &lambda;");
-        $('#afr1').html(values.afr1.toFixed(2) + " AFR");
-        $('#afr2').html(values.afr2.toFixed(2) + " AFR");
+        // Checken ob bei Bank 1 ein Fehler oder Heizphase vorliegt
+        if (0 - Math.abs(values.lamda1) <= 0.15) {
+            $('#bank1').html("Bank 1 - Fehler")
+            $('#bank1').css("color", "#b30000")
+            $('#lamda1').html("---------");
+            $('#afr1').html("--------");
+            
+        } else if (0.4 - Math.abs(values.lamda1) <= 0.2) {
+            $('#bank1').html("Bank 1 - Heizphase")
+            $('#bank1').css("color", "#b30000")
+            $('#lamda1').html("---------");
+            $('#afr1').html("--------");
+            
+        } else {
+            $('#bank1').html("Bank 1")
+            $('#bank1').css("color", "#000000")
+            $('#lamda1').html(values.lamda1.toFixed(3) + " &lambda;");
+            $('#afr1').html(values.afr1.toFixed(2) + " AFR");
+        }
+        
+        // Checken ob bei Bank 2 ein Fehler oder Heizphase vorliegt
+        if (0 - Math.abs(values.lamda2) <= 0.15) {
+            $('#bank2').html("Bank 2 - Fehler")
+            $('#bank2').css("color", "#b30000")
+            $('#lamda2').html("---------");
+            $('#afr2').html("--------");
+            
+        } else if (0.4 - Math.abs(values.lamda2) <= 0.2) {
+            $('#bank2').html("Bank 2 - Heizphase")
+            $('#bank2').css("color", "#b30000")
+            $('#lamda2').html("---------");
+            $('#afr2').html("--------");
+            
+        } else {
+            $('#bank2').html("Bank 2")
+            $('#bank2').css("color", "#000000")
+            $('#lamda2').html(values.lamda2.toFixed(3) + " &lambda;");
+            $('#afr2').html(values.afr2.toFixed(2) + " AFR");
+        }
 
         console.log("Volt 1: " + values.volt1);
         console.log("Volt 2: " + values.volt2);
