@@ -148,8 +148,8 @@
             $('#afr2').html(values.afr2.toFixed(2) + " AFR");
         }
 
-        console.log("Volt 1: " + values.volt1);
-        console.log("Volt 2: " + values.volt2);
+        console.log("Volt 1: " + values.volt1.toFixed(2));
+        console.log("Volt 2: " + values.volt2.toFixed(2));
 
         // Sind die Werte von Lamda entsprechend, wird der Text erst Orange und dann Rot
         if (values.lamda1 >= 1.12 || values.lamda1 <= 0.86) {
