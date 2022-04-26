@@ -7,6 +7,7 @@ import os
 import sys
 
 from threading import Thread, Event
+from statistics import mean
 
 
 from flask import Flask, render_template
@@ -16,7 +17,7 @@ from influxdb import InfluxDBClient
 from GPIO import GPIO_Reader
 
 import raspi_status as pi
-from globale_variablen import MESSINTERVAL, DB_DELETE_AELTER_ALS
+from globale_variablen import MESSURE_INTERVAL, UPDATE_INTERVAL, DB_DELETE_AELTER_ALS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -44,25 +45,56 @@ def write_to_systemd(message: str):
     sys.stdout.flush()
 
 
-def update_data(interval: float):
+def update_data(update_interval: float, messure_interval: float):
     """Daten werden vom GPIO neu ausgelesen und zur Webseite übertragen
     Ist aktuell eine Aufnahme am start, so wird  0.5 Sekunden geschlafen
 
     Args:
         interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
     """
+
+
+    sampling_rate = messure_interval
+    number_of_lamda_values = round(update_interval / sampling_rate)
+
     while not THREAD_STOP_EVENT.isSet():
-        data = GPIO.getData()
+
+
+        lamda_values = []
+        for number in range(number_of_lamda_values):
+            data = GPIO.getData()
+            lamda_values.append(data)
+            time.sleep(sampling_rate)
+
+        sum_of_lamda1 = 0
+        sum_of_lamda2 = 0
+        sum_of_volt1 = 0
+        sum_of_volt2 = 0
+        sum_of_afr1 = 0
+        sum_of_afr2 = 0
+
+        for lamda_value in lamda_values:
+            sum_of_lamda1 += lamda_value["lamda1"]
+            sum_of_lamda2 += lamda_value["lamda2"]
+            sum_of_volt1 += lamda_value["volt1"]
+            sum_of_volt2 += lamda_value["volt2"]
+            sum_of_afr1 += lamda_value["afr1"]
+            sum_of_afr2 += lamda_value["afr2"]
+
+        data = {
+            "lamda1": sum_of_lamda1 / number_of_lamda_values,
+            "lamda2": sum_of_lamda2 / number_of_lamda_values,
+            "volt1": sum_of_volt1 / number_of_lamda_values,
+            "volt2": sum_of_volt2 / number_of_lamda_values,
+            "afr1": sum_of_afr1 / number_of_lamda_values,
+            "afr2": sum_of_afr2 / number_of_lamda_values,
+        }
+
         socketio.emit("newValues", data, broadcast=True)
-        # print(data)
 
         if IS_RECORDING:
             record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
             record_thread.start()
-            time.sleep(0.5)  # Bei aufnahme nurnoch alle 0,5 Sekunden
-
-        else:
-            time.sleep(interval)
 
 
 def write_to_db(data: dict):
@@ -143,6 +175,8 @@ def connected(json: dict):
     global THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
+    global UPDATE_INTERVAL
+    global MESSURE_INTERVAL
 
     date_string = json['data']
     time_befehl = "/usr/bin/date -s " + str(date_string)
@@ -154,7 +188,7 @@ def connected(json: dict):
     if not THREAD.isAlive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(update_data, MESSINTERVAL)
+        THREAD = socketio.start_background_task(update_data, UPDATE_INTERVAL, MESSURE_INTERVAL)
 
 
 @socketio.on('disconnect')
@@ -204,7 +238,7 @@ if __name__ == "__main__":
 
 # Clean data from DB older than 6 Months
 db_delete_time_string = (datetime.datetime.now() -
-               datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
+                         datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
 query = "DELETE WHERE time < '" + db_delete_time_string + "'"
 write_to_systemd(f"Delete Data older than {db_delete_time_string}")
 result = client.query(query)
