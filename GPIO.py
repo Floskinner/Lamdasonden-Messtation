@@ -1,6 +1,5 @@
-from MCP3008 import MCP3008
-
 from globale_variablen import AFR_STOCH
+from MCP3008 import MCP3008
 
 
 class GPIO_Reader(object):
@@ -21,7 +20,7 @@ class GPIO_Reader(object):
         return lamda
 
     def get_afr(self, voltage: float) -> float:
-        afr = round( 3.018 * voltage + 7.361 , 2)
+        afr = round(3.018 * voltage + 7.361, 2)
         return afr
 
     def getData(self):
@@ -40,6 +39,6 @@ class GPIO_Reader(object):
             "afr1": afr_1,
             "afr2": afr_2,
             "volt1": voltage_1,
-            "volt2": voltage_2
+            "volt2": voltage_2,
         }
         return data
