@@ -4,11 +4,15 @@ body {
     background-color: rgb(139, 134, 134);
 }
 
-body {
-    background-image: url("../images/maybach2.svg");
-    background-repeat: no-repeat;
-    background-position: top;
-    background-size: 10%;
+.mybackround {
+  background-image: url("../images/maybach2.svg");
+  background-repeat: no-repeat;
+  background-position: top;
+  background-size: 10%;
+}
+
+.mybackround.hidden {
+  background-image: none;
 }
 
 .bank {
@@ -25,8 +29,15 @@ body {
 
 @media only screen and (min-width: 768px) {
     /* For desktop: */
-    body {
-        background-position: center;
+    .mybackround {
+      background-image: url("../images/maybach2.svg");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 10%;
+    }
+    
+    .mybackround.hidden {
+      background-image: none;
     }
 
     .bank {
