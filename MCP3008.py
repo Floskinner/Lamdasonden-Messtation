@@ -29,7 +29,8 @@ class TestMCP3008:
         pass
 
     def read(self, channel=0):
-        return 500
+        # Lamda 1 = 500
+        return 900
 
     def close(self):
         pass
