@@ -112,7 +112,7 @@ function applyWarningColors(htmlElement, lamdaValue) {
 
 async function applyRedBlinking(htmlElement) {
     await Sleep(UPDATE_INTERVALL / 2);
-    htmlElement.css("color", BLACK);
+    htmlElement.css("color", "rgba(0,0,0,0)");
 }
 
 function Sleep(milliseconds) {
