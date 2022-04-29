@@ -1,4 +1,4 @@
-- [ ] Optional nur ein ausgewählten Kanal anzeigen
+- [X] Optional nur ein ausgewählten Kanal anzeigen
 - [ ] Legende der Farben bei der Anzeige
-- [ ] Blinkender Hintergrund sobald er rot wird
-- [ ] Optional nur eine Stelle nach dem Komma anzeigen
+- [X] Blinkender Hintergrund sobald er rot wird
+- [X] Optional nur eine Stelle nach dem Komma anzeigen

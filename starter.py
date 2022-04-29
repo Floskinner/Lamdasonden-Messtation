@@ -134,7 +134,10 @@ def index():
     now = datetime.datetime.now()
     current_year = now.strftime("%Y")
 
-    template_data = {"current_year": current_year}
+    template_data = {
+        "current_year": current_year,
+        "update_intervall": UPDATE_INTERVAL * 1000,  # To convert to ms
+    }
 
     return render_template("index.html", **template_data)
 
