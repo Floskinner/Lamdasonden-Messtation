@@ -1,12 +1,10 @@
-from random import random
-
 from spidev import SpiDev
 
 
 class MCP3008:
     def __init__(self, bus=0, device=0):
-        self.bus, self.device = bus, device
         self.spi = SpiDev()
+        self.bus, self.device = bus, device
         self.open()
         self.spi.max_speed_hz = 1000000  # 1MHz
 
@@ -21,3 +19,17 @@ class MCP3008:
 
     def close(self):
         self.spi.close()
+
+
+class TestMCP3008:
+    def __init__(self):
+        pass
+
+    def open(self):
+        pass
+
+    def read(self, channel=0):
+        return 500
+
+    def close(self):
+        pass

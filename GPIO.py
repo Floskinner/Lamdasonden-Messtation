@@ -1,5 +1,7 @@
-from globale_variablen import AFR_STOCH
+import os
+
 from MCP3008 import MCP3008
+from MCP3008 import TestMCP3008
 
 
 class GPIO_Reader(object):
@@ -8,7 +10,10 @@ class GPIO_Reader(object):
     """
 
     def __init__(self):
-        self.adc = MCP3008()
+        if os.environ["FLASK_ENV"] == "development":
+            self.adc = TestMCP3008()
+        else:
+            self.adc = MCP3008()
 
     def get_voltage(self, channel: int) -> float:
         value = self.adc.read(channel)
