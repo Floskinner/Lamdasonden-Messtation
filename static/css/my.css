@@ -5,7 +5,7 @@ body {
 }
 
 .mybackround {
-  background-image: url("../images/maybach2.svg");
+  background-image: url("../images/maybach.svg");
   background-repeat: no-repeat;
   background-position: top;
   background-size: 10%;
@@ -30,7 +30,7 @@ body {
 @media only screen and (min-width: 768px) {
     /* For desktop: */
     .mybackround {
-      background-image: url("../images/maybach2.svg");
+      background-image: url("../images/maybach.svg");
       background-repeat: no-repeat;
       background-position: center;
       background-size: 10%;
