@@ -185,7 +185,7 @@ def connected(json: dict):
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1
 
-    if not THREAD.isAlive():
+    if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
         THREAD = socketio.start_background_task(
