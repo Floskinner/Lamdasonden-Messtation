@@ -5,7 +5,6 @@ import datetime
 import os
 import sys
 import time
-from statistics import mean
 from threading import Event
 from threading import Thread
 
@@ -15,9 +14,7 @@ from flask_socketio import SocketIO
 from influxdb import InfluxDBClient
 
 import raspi_status as pi
-from globale_variablen import DB_DELETE_AELTER_ALS
-from globale_variablen import MESSURE_INTERVAL
-from globale_variablen import UPDATE_INTERVAL
+from globale_variablen import config
 from GPIO import GPIO_Reader
 
 app = Flask(__name__)
@@ -136,7 +133,10 @@ def index():
     now = datetime.datetime.now()
     current_year = now.strftime("%Y")
 
-    template_data = {"current_year": current_year, "update_intervall": UPDATE_INTERVAL * 1000}  # To convert to ms
+    template_data = {
+        "current_year": current_year,
+        "update_intervall": config.UPDATE_INTERVAL * 1000, # To convert to ms
+    }
 
     return render_template("index.html", **template_data)
 
@@ -177,8 +177,6 @@ def connected(json: dict):
     global THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
-    global UPDATE_INTERVAL
-    global MESSURE_INTERVAL
 
     date_string = json["data"]
     time_befehl = "/usr/bin/date -s " + str(date_string)
@@ -190,7 +188,7 @@ def connected(json: dict):
     if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(update_data, UPDATE_INTERVAL, MESSURE_INTERVAL)
+        THREAD = socketio.start_background_task(update_data, config.UPDATE_INTERVAL, config.MESSURE_INTERVAL)
 
 
 @socketio.on("disconnect")
@@ -240,7 +238,7 @@ if __name__ == "__main__":
 
 # Clean data from DB older than 6 Months
 if os.environ["FLASK_ENV"] != "development":
-    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime(
+    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
         "%Y-%m-%d"
     )
     query = "DELETE WHERE time < '" + db_delete_time_string + "'"
