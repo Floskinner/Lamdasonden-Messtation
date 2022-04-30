@@ -69,11 +69,7 @@ def get_ram_info() -> dict:
     ram_available = round(psutil.virtual_memory().available / (1024 * 1024))
     ram_free_percent = round((100 / ram_total) * ram_available, 2)
 
-    ram_info = {
-        "ram_total": ram_total,
-        "ram_available": ram_available,
-        "ram_free_percent": ram_free_percent,
-    }
+    ram_info = {"ram_total": ram_total, "ram_available": ram_available, "ram_free_percent": ram_free_percent}
 
     return ram_info
 
@@ -90,11 +86,6 @@ def get_disk_info() -> dict:
     disk_free = round(psutil.disk_usage("/").free / (1024 * 1024 * 1024), 2)
     disk_free_percent = 100 - round(psutil.disk_usage("/").percent, 2)
 
-    data = {
-        "total": disk_total,
-        "used": disk_used,
-        "free": disk_free,
-        "percent": disk_free_percent,
-    }
+    data = {"total": disk_total, "used": disk_used, "free": disk_free, "percent": disk_free_percent}
 
     return data

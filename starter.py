@@ -31,6 +31,7 @@ THREAD_STOP_EVENT = Event()
 CONNECTIONS_COUNTER = 0
 IS_RECORDING = False
 
+# fmt:off
 client = InfluxDBClient(
     host="127.0.0.1",
     port=8086,
@@ -38,6 +39,7 @@ client = InfluxDBClient(
     password="password",
     database="lamdawerte",
 )
+# fmt:on
 
 
 def write_to_systemd(message: str):
@@ -65,7 +67,7 @@ def update_data(update_interval: float, messure_interval: float):
     while not THREAD_STOP_EVENT.isSet():
 
         lamda_values = []
-        for number in range(number_of_lamda_values):
+        for _ in range(number_of_lamda_values):
             data = GPIO.getData()
             lamda_values.append(data)
             time.sleep(sampling_rate)
@@ -134,10 +136,7 @@ def index():
     now = datetime.datetime.now()
     current_year = now.strftime("%Y")
 
-    template_data = {
-        "current_year": current_year,
-        "update_intervall": UPDATE_INTERVAL * 1000,  # To convert to ms
-    }
+    template_data = {"current_year": current_year, "update_intervall": UPDATE_INTERVAL * 1000}  # To convert to ms
 
     return render_template("index.html", **template_data)
 
@@ -191,9 +190,7 @@ def connected(json: dict):
     if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(
-            update_data, UPDATE_INTERVAL, MESSURE_INTERVAL
-        )
+        THREAD = socketio.start_background_task(update_data, UPDATE_INTERVAL, MESSURE_INTERVAL)
 
 
 @socketio.on("disconnect")
@@ -243,9 +240,9 @@ if __name__ == "__main__":
 
 # Clean data from DB older than 6 Months
 if os.environ["FLASK_ENV"] != "development":
-    db_delete_time_string = (
-        datetime.datetime.now() - datetime.timedelta(days=DB_DELETE_AELTER_ALS)
-    ).strftime("%Y-%m-%d")
+    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime(
+        "%Y-%m-%d"
+    )
     query = "DELETE WHERE time < '" + db_delete_time_string + "'"
     write_to_systemd(f"Delete Data older than {db_delete_time_string}")
     result = client.query(query)
