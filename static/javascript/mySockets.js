@@ -33,58 +33,23 @@ socket.on('newValues', function (values) {
     const lamda2 = values.lamda2;
     const afr1 = values.afr1;
     const afr2 = values.afr2;
+    const voltage1 = values.volt1;
+    const voltage2 = values.volt2;
 
     updateValuesOnScreen(lamda1, lamda2, afr1, afr2);
 
     applyWarningColors($("#lamda1"), lamda1);
     applyWarningColors($("#lamda2"), lamda2);
 
-    if (lamda1 >= MAX_ABOVE_RED || lamda1 <= MAX_BELOW_RED ){
+    checkErrors($('#bank1Label'), $('#lamda1'), $('#afr1'), voltage1);
+    checkErrors($('#bank2Label'), $('#lamda2'), $('#afr2'), voltage2);
+
+    if (lamda1 >= MAX_ABOVE_RED || lamda1 <= MAX_BELOW_RED) {
         applyRedBlinking($("#lamda1"));
     }
-    if (lamda2 >= MAX_ABOVE_RED || lamda2 <= MAX_BELOW_RED ){
+    if (lamda2 >= MAX_ABOVE_RED || lamda2 <= MAX_BELOW_RED) {
         applyRedBlinking($("#lamda2"));
     }
-
-    // // Checken ob bei Bank 1 ein Fehler oder Heizphase vorliegt
-    // if (0 - Math.abs(values.lamda1) <= 0.15) {
-    //     $('#bank1Label').html("Bank 1 - Fehler");
-    //     $('#bank1Label').css("color", "#b30000");
-    //     $('#lamda1').html("---------");
-    //     $('#afr1').html("--------");
-
-    // } else if (0.4 - Math.abs(values.lamda1) <= 0.2) {
-    //     $('#bank1Label').html("Bank 1 - Heizphase");
-    //     $('#bank1Label').css("color", "#b30000");
-    //     $('#lamda1').html("---------");
-    //     $('#afr1').html("--------");
-
-    // } else {
-    //     $('#bank1Label').html("Bank 1");
-    //     $('#bank1Label').css("color", "#000000");
-    //     $('#lamda1').html(values.lamda1.toFixed(3) + " &lambda;");
-    //     $('#afr1').html(values.afr1.toFixed(2) + " AFR");
-    // }
-
-    // // Checken ob bei Bank 2 ein Fehler oder Heizphase vorliegt
-    // if (0 - Math.abs(values.lamda2) <= 0.15) {
-    //     $('#bank2Label').html("Bank 2 - Fehler");
-    //     $('#bank2Label').css("color", "#b30000");
-    //     $('#lamda2').html("---------");
-    //     $('#afr2').html("--------");
-
-    // } else if (0.4 - Math.abs(values.lamda2) <= 0.2) {
-    //     $('#bank2Label').html("Bank 2 - Heizphase");
-    //     $('#bank2Label').css("color", "#b30000");
-    //     $('#lamda2').html("---------");
-    //     $('#afr2').html("--------");
-
-    // } else {
-    //     $('#bank2Label').html("Bank 2");
-    //     $('#bank2Label').css("color", "#000000");
-    //     $('#lamda2').html(values.lamda2.toFixed(3) + " &lambda;");
-    //     $('#afr2').html(values.afr2.toFixed(2) + " AFR");
-    // }
 });
 
 
@@ -95,6 +60,30 @@ function updateValuesOnScreen(lamda1, lamda2, afr1, afr2) {
     $('#lamda2').html(lamda2.toFixed(decimalPlaces) + " &lambda;");
     $('#afr1').html(afr1.toFixed(2) + " AFR");
     $('#afr2').html(afr2.toFixed(2) + " AFR");
+}
+
+function checkErrors(htmlBankLabel, htmlLamda, htmlAFR, voltage) {
+    label = htmlBankLabel.html();
+    color = "#000000";
+    lamda = htmlLamda.html();
+    afr = htmlAFR.html();
+
+    if (Math.abs(voltage) <= 0.15) {
+        // label += " - Fehler";
+        color= "#b30000";
+        lamda = "Fehler";
+        afr = "--------";
+    } else if (Math.abs(voltage) <= 0.2) {
+        // label += " - Heizphase";
+        color= "#b30000";
+        lamda = "Heizphase";
+        afr = "--------";
+    }
+
+    htmlBankLabel.html(label);
+    htmlBankLabel.css("color", color);
+    htmlLamda.html(lamda);
+    htmlAFR.html(afr);
 }
 
 function applyWarningColors(htmlElement, lamdaValue) {
