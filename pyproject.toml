@@ -14,10 +14,9 @@ Jinja2 = "^3.1.2"
 psutil = "^5.9.0"
 requests = "^2.27.1"
 spidev = "^3.5"
-eventlet = "^0.33.0"
+eventlet = "0.30.2"
 
 [tool.poetry.dev-dependencies]
-pyinstaller = "^5.0.1"
 black = "^22.3.0"
 flake8 = "^4.0.1"
 pylint = "^2.13.8"
