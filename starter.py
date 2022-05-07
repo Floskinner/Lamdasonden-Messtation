@@ -135,7 +135,7 @@ def index():
 
     template_data = {
         "current_year": current_year,
-        "update_intervall": config.UPDATE_INTERVAL * 1000, # To convert to ms
+        "update_intervall": config.UPDATE_INTERVAL * 1000,  # To convert to ms
     }
 
     return render_template("index.html", **template_data)
@@ -232,12 +232,11 @@ def recording(json: dict):
 
 
 if __name__ == "__main__":
-    # socketio.run(app, debug=True, port=8080, host='0.0.0.0')
-    pass
+    socketio.run(app, debug=True, port=8080, host="0.0.0.0")
 
 
 # Clean data from DB older than 6 Months
-if os.environ["FLASK_ENV"] != "development":
+if os.environ.get("FLASK_ENV") != "development":
     db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
         "%Y-%m-%d"
     )
