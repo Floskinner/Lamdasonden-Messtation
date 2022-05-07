@@ -11,7 +11,7 @@ class GPIO_Reader(object):
     """
 
     def __init__(self):
-        if os.environ["FLASK_ENV"] == "development":
+        if os.environ.get("FLASK_ENV") == "development":
             self.adc = TestMCP3008()
         else:
             self.adc = MCP3008()
