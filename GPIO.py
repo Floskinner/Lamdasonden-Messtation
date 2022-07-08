@@ -21,8 +21,8 @@ class GPIO_Reader(object):
         voltage = value / 1023.0 * 5.0
         return voltage
 
-    def get_lamda(self, voltage: float) -> float:
-        lamda = round(0.2 * voltage + 0.511, 3)
+    def get_lamda(self, voltage: float, correction: float) -> float:
+        lamda = round(0.2 * voltage + correction, 3)
         return lamda
 
     def get_afr(self, lamda: float) -> float:
@@ -33,8 +33,8 @@ class GPIO_Reader(object):
         voltage_1 = self.get_voltage(0)
         voltage_2 = self.get_voltage(1)
 
-        lamda_1 = round(self.get_lamda(voltage_1), 3)
-        lamda_2 = round(self.get_lamda(voltage_2), 3)
+        lamda_1 = round(self.get_lamda(voltage_1, config.KORREKTURFAKTOR_BANK_1), 3)
+        lamda_2 = round(self.get_lamda(voltage_2, config.KORREKTURFAKTOR_BANK_2), 3)
 
         afr_1 = self.get_afr(lamda_1)
         afr_2 = self.get_afr(lamda_2)

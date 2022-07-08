@@ -4,6 +4,10 @@ body {
     background-color: rgb(139, 134, 134);
 }
 
+input {
+  background-color: rgb(139, 134, 134);
+}
+
 .mybackround {
   background-image: url("../images/maybach.svg");
   background-repeat: no-repeat;

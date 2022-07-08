@@ -7,9 +7,12 @@ import sys
 import time
 from threading import Event
 from threading import Thread
+from typing import Dict
 
 from flask import Flask
 from flask import render_template
+from flask import request
+from flask import Response
 from flask_socketio import SocketIO
 from influxdb import InfluxDBClient
 
@@ -136,9 +139,31 @@ def index():
     template_data = {
         "current_year": current_year,
         "update_intervall": config.UPDATE_INTERVAL * 1000,  # To convert to ms
+        "correction_bank_1": config.KORREKTURFAKTOR_BANK_1,
+        "correction_bank_2": config.KORREKTURFAKTOR_BANK_2,
     }
 
     return render_template("index.html", **template_data)
+
+
+@app.route("/correction", methods=["GET", "POST"])
+def update_correction():
+    if request.method == "GET":
+        return {"correction_bank_1": config.KORREKTURFAKTOR_BANK_1, "correction_bank_2": config.KORREKTURFAKTOR_BANK_2}
+
+    else:
+        data: dict = request.form
+        try:
+            correction_bank_1 = float(data["correction_bank_1"])
+            correction_bank_2 = float(data["correction_bank_2"])
+
+            config.update_setting("KORREKTURFAKTOR_BANK_1", correction_bank_1)
+            config.update_setting("KORREKTURFAKTOR_BANK_2", correction_bank_2)
+        except Exception as e:
+            print(e)
+            return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+
+        return Response("Success", status=200)
 
 
 @app.route("/system")

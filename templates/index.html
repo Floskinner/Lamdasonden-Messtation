@@ -35,18 +35,19 @@
     <div class="w3-cell-row w3-display-container" style="height: 90%;">
         <!-- Linke Seite / Bank 1 -->
         <div id="bank1" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p id="bank1Label" class="bank">Bank 1</p>
+            <p id="bank1Label" class="bank">Bank 1 &#128993;</p>
             <p id="lamda1" class="lamda">9,999 &lambda;</p>
             <p id="afr1" class="afr">9,999 AFR</p>
         </div>
 
         <!-- Rechte Seite / Bank 2 -->
         <div id="bank2" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p id="bank2Label" class="bank">Bank 2</p>
+            <p id="bank2Label" class="bank">Bank 2 &#128308;</p>
             <p id="lamda2" class="lamda">9,999 &lambda;</p>
             <p id="afr2" class="afr">9,999 AFR</p>
         </div>
-    <img src="../static/images/Legende.png" alt="Legende" class="w3-display-bottomright" height="25%" style="padding-bottom: 20px; padding-right: 20px;">
+        <img src="../static/images/Legende.png" alt="Legende" class="w3-display-bottomright" height="25%"
+            style="padding-bottom: 20px; padding-right: 20px;">
     </div>
 
     <!-- Unterer Bereich -->
@@ -67,11 +68,13 @@
 
             <form class="w3-container w3-padding-16">
                 <h4>Anzuzeigende Banken:</h4>
-                <input class="w3-check" type="checkbox" checked="checked" onchange="$('#bank1').toggle(); $('.mybackround').toggleClass('hidden');">
-                <label>Bank 1</label><br>
+                <input class="w3-check" type="checkbox" checked="checked"
+                    onchange="$('#bank1').toggle(); $('.mybackround').toggleClass('hidden');">
+                <label>Bank 1 &#128993</label><br>
 
-                <input class="w3-check" type="checkbox" checked="checked" onchange="$('#bank2').toggle(); $('.mybackround').toggleClass('hidden');">
-                <label>Bank 2</label><br>
+                <input class="w3-check" type="checkbox" checked="checked"
+                    onchange="$('#bank2').toggle(); $('.mybackround').toggleClass('hidden');">
+                <label>Bank 2 &#128308</label><br>
 
                 <h4>Anzuzeigende Nachkommastellen:</h4>
                 <input class="w3-radio" type="radio" name="nachkommastellen" value="1" checked>
@@ -80,6 +83,22 @@
                 <label>2</label><br>
                 <input class="w3-radio" type="radio" name="nachkommastellen" value="3" checked>
                 <label>3</label><br>
+
+                <hr>
+
+                <h4>Korrekturfaktor für Lamdaberechnung:</h4>
+                <label>Neukalibrierung? </label><input class="w3-check" type="checkbox"
+                    onchange=toggle_correction()><br>
+                <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
+                    verändert werden !!!"</p>
+                <br>
+                <label>Bank 1 &#128993</label><br>
+                <input id="correction_bank_1" class="w3-input" style="width:30%" type="text"
+                    value="{{ correction_bank_1 }}" placeholder="0.511" disabled>
+                <br>
+                <label>Bank 2 &#128308</label><br>
+                <input id="correction_bank_2" class="w3-input" style="width:30%" type="text"
+                    value="{{ correction_bank_2 }}" placeholder="0.511" disabled>
             </form>
 
             <div class="w3-container w3-padding-16">
@@ -88,7 +107,7 @@
                 <button class="w3-button w3-round-large w3-border"
                     onclick="location.href='http://192.168.1.1/system';">System</button>
                 <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
-                    onclick="document.getElementById('menueModal').style.display='none'">Speichern</button>
+                    onclick=save_settings()>Speichern</button>
             </div>
         </div>
     </div>
@@ -102,12 +121,13 @@
 <script type="text/javascript" charset="utf-8">
 
     const UPDATE_INTERVALL = {{ update_intervall }};
+    const menueModal = $("#menueModal");
 
     $(document).ready(function () {
         $("#recording").click(toogleRecording);
     });
 
-    
+
     function toogleRecording() {
         if ($("#recording").prop("checked")) {
 
@@ -127,18 +147,66 @@
         }
     }
 
-    // Get the modal
-    let menueModal = $("#menueModal");
-
     function openMenue() {
+        update_setting_text();
         menueModal.css("display", "block");
     }
-    // When the user clicks anywhere outside of the modal, close it
-    $(window).click((event) => {
-        if ($(event.target).is(menueModal)) {
-            menueModal.css("display", "none");
+
+    function save_settings() {
+
+        let correction_bank_1 = $("#correction_bank_1").val();
+        let correction_bank_2 = $("#correction_bank_2").val();
+
+        correction_bank_1 = correction_bank_1.replace(",", ".");
+        correction_bank_2 = correction_bank_2.replace(",", ".");
+
+        data = {
+            "correction_bank_1": correction_bank_1,
+            "correction_bank_2": correction_bank_2
         }
-    });
+
+        $.ajax({
+            type: "POST",
+            url: "/correction",
+            data: data,
+            statusCode: {
+                400: () => {
+                    alert("Settings not Saved! Please check!");
+                },
+                200: () => {
+                    alert("Settings Saved!");
+                }
+            },
+            dataType: "json"
+        });
+        document.getElementById('menueModal').style.display = 'none'
+    }
+
+    function update_setting_text() {
+        $.ajax({
+            type: "GET",
+            url: "/correction",
+            success: (data, textStatus, jqXHR) => {
+                $("#correction_bank_1").val(data["correction_bank_1"]);
+                $("#correction_bank_2").val(data["correction_bank_2"]);
+            },
+            dataType: "json"
+        });
+    }
+
+    function toggle_correction() {
+
+        if ($('#warning').is(':visible')) {
+            $('#correction_bank_1').prop('disabled', true);
+            $('#correction_bank_2').prop('disabled', true);
+        } else {
+            alert("ACHTUNG!\nEingabe darf nur bei einer Neukalibrierung verändert werden!");
+            $('#correction_bank_1').prop('disabled', false);
+            $('#correction_bank_2').prop('disabled', false);
+        }
+
+        $('#warning').toggle();
+    }
 
 </script>
 
