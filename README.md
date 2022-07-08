@@ -58,7 +58,7 @@ pip install -r requirements.txt
 ```
 
 ### Service
-Der Service muss unter `/etc/systemd/system/lamda.service` liegen -> [Anleitung](https://www.raspberrypi.org/documentation/linux/usage/systemd.md). Wichtig hier, dass `Environment="PATH=/home/pi/lamdaProjekt/lamda_env/bin"` dem Pfad entspricht, wo auch die virtualenv ist, damit sichergestellt ist, das auch alle benötigte vorhaben ist.
+Der Service muss unter `/etc/systemd/system/lamda.service` liegen -> [Anleitung](https://www.raspberrypi.org/documentation/linux/usage/systemd.md). Wichtig hier, dass `Environment="PATH=/home/pi/lamdaProjekt/venv/bin"` dem Pfad entspricht, wo auch die virtualenv ist, damit sichergestellt ist, das auch alle benötigte vorhaben ist.
 
 ### Flask / Gunicorn
 Der Webserver wird mithilfe von [Flask](https://flask.palletsprojects.com/en/1.1.x/) erstellt und mit [Gunicorn](https://docs.gunicorn.org/en/stable/run.html) gehosted (Anleitung auch bei Flask-soketIO). Mithilfe von [Flask-soketIO](https://flask.palletsprojects.com/en/1.1.x/api/#blueprint-objects) wird dann ein Socket erstellt, damit die Daten in Echtzeit im Browser erscheinen können. Gunicorn braucht eine `.py`-Datei mit entsprechenden Konfigurationen, die dann beim Service aufruf mit übergebenen werden müssen (`gunicorn.conf.py`)

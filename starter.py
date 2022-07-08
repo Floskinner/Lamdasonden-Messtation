@@ -1,26 +1,27 @@
 """
 Modul das von Gunicorn verwendet wird um den Server zu starten
 """
-import time
 import datetime
 import os
 import sys
+import time
+from threading import Event
+from threading import Thread
+from typing import Dict
 
-from threading import Thread, Event
-from statistics import mean
-
-
-from flask import Flask, render_template
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import Response
 from flask_socketio import SocketIO
-
 from influxdb import InfluxDBClient
-from GPIO import GPIO_Reader
 
 import raspi_status as pi
-from globale_variablen import MESSURE_INTERVAL, UPDATE_INTERVAL, DB_DELETE_AELTER_ALS
+from globale_variablen import config
+from GPIO import GPIO_Reader
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
 GPIO = GPIO_Reader()
@@ -30,12 +31,19 @@ THREAD_STOP_EVENT = Event()
 CONNECTIONS_COUNTER = 0
 IS_RECORDING = False
 
-client = InfluxDBClient(host='127.0.0.1', port=8086, username='python',
-                        password='password', database='lamdawerte')
+# fmt:off
+client = InfluxDBClient(
+    host="127.0.0.1",
+    port=8086,
+    username="python",
+    password="password",
+    database="lamdawerte",
+)
+# fmt:on
 
 
 def write_to_systemd(message: str):
-    """Übergebene Nachrichten werden auf die Konsole ausgegeben mit print und anschließend 
+    """Übergebene Nachrichten werden auf die Konsole ausgegeben mit print und anschließend
     erfolgt sys.stdout.flush(). Dadurch werden alle Ausgaben direkt in die systemd Logs eingetragen
 
     Args:
@@ -53,15 +61,13 @@ def update_data(update_interval: float, messure_interval: float):
         interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
     """
 
-
     sampling_rate = messure_interval
     number_of_lamda_values = round(update_interval / sampling_rate)
 
     while not THREAD_STOP_EVENT.isSet():
 
-
         lamda_values = []
-        for number in range(number_of_lamda_values):
+        for _ in range(number_of_lamda_values):
             data = GPIO.getData()
             lamda_values.append(data)
             time.sleep(sampling_rate)
@@ -107,15 +113,13 @@ def write_to_db(data: dict):
     json_body = [
         {
             "measurement": "lamdawerte",
-            "tags": {
-                "Car": "IEinAutoTag"
-            },
+            "tags": {"Car": "IEinAutoTag"},
             "fields": {
                 "Lamda_1": data["lamda1"],
                 "AFR_1": data["afr1"],
                 "Lamda_2": data["lamda2"],
-                "AFR_2": data["afr2"]
-            }
+                "AFR_2": data["afr2"],
+            },
         }
     ]
 
@@ -133,10 +137,33 @@ def index():
     current_year = now.strftime("%Y")
 
     template_data = {
-        'current_year': current_year
+        "current_year": current_year,
+        "update_intervall": config.UPDATE_INTERVAL * 1000,  # To convert to ms
+        "correction_bank_1": config.KORREKTURFAKTOR_BANK_1,
+        "correction_bank_2": config.KORREKTURFAKTOR_BANK_2,
     }
 
-    return render_template('index.html', **template_data)
+    return render_template("index.html", **template_data)
+
+
+@app.route("/correction", methods=["GET", "POST"])
+def update_correction():
+    if request.method == "GET":
+        return {"correction_bank_1": config.KORREKTURFAKTOR_BANK_1, "correction_bank_2": config.KORREKTURFAKTOR_BANK_2}
+
+    else:
+        data: dict = request.form
+        try:
+            correction_bank_1 = float(data["correction_bank_1"])
+            correction_bank_2 = float(data["correction_bank_2"])
+
+            config.update_setting("KORREKTURFAKTOR_BANK_1", correction_bank_1)
+            config.update_setting("KORREKTURFAKTOR_BANK_2", correction_bank_2)
+        except Exception as e:
+            print(e)
+            return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+
+        return Response("Success", status=200)
 
 
 @app.route("/system")
@@ -159,10 +186,10 @@ def system():
         "os_disk_free_percent": pi.get_disk_info().get("percent"),
     }
 
-    return render_template('system.html', **system_data)
+    return render_template("system.html", **system_data)
 
 
-@socketio.on('connected')
+@socketio.on("connected")
 def connected(json: dict):
     """Sobald eine Verbindung mit dem Socket aufgebaut wird, startet die Methode den Thread für das
     updaten der Daten. Zudem setzt sie die Systemzeit gleich der Browserzeit,
@@ -175,30 +202,28 @@ def connected(json: dict):
     global THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
-    global UPDATE_INTERVAL
-    global MESSURE_INTERVAL
 
-    date_string = json['data']
+    date_string = json["data"]
     time_befehl = "/usr/bin/date -s " + str(date_string)
     os.system(time_befehl)
 
-    write_to_systemd('Client connected')
+    write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1
 
-    if not THREAD.isAlive():
+    if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(update_data, UPDATE_INTERVAL, MESSURE_INTERVAL)
+        THREAD = socketio.start_background_task(update_data, config.UPDATE_INTERVAL, config.MESSURE_INTERVAL)
 
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def disconnect():
     """Falls keiner mehr mit dem Socket verbunden ist,
     werden alle Threads (update Data und aufnahme) gestoppt
     """
     global CONNECTIONS_COUNTER
 
-    write_to_systemd('Client disconnected')
+    write_to_systemd("Client disconnected")
     CONNECTIONS_COUNTER -= 1
 
     if CONNECTIONS_COUNTER == 0:
@@ -210,10 +235,10 @@ def disconnect():
         THREAD_STOP_EVENT.set()
         IS_RECORDING = False
 
-        write_to_systemd('Stopped thread')
+        write_to_systemd("Stopped thread")
 
 
-@socketio.on('recording')
+@socketio.on("recording")
 def recording(json: dict):
     """Startet oder stoppt die Aufnahem von Daten, welche in der InfluxDB gespeichert werden
 
@@ -232,13 +257,14 @@ def recording(json: dict):
 
 
 if __name__ == "__main__":
-    #socketio.run(app, debug=True, port=8080, host='0.0.0.0')
-    pass
+    socketio.run(app, debug=True, port=8080, host="0.0.0.0")
 
 
 # Clean data from DB older than 6 Months
-db_delete_time_string = (datetime.datetime.now() -
-                         datetime.timedelta(days=DB_DELETE_AELTER_ALS)).strftime("%Y-%m-%d")
-query = "DELETE WHERE time < '" + db_delete_time_string + "'"
-write_to_systemd(f"Delete Data older than {db_delete_time_string}")
-result = client.query(query)
+if os.environ.get("FLASK_ENV") != "development":
+    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
+        "%Y-%m-%d"
+    )
+    query = "DELETE WHERE time < '" + db_delete_time_string + "'"
+    write_to_systemd(f"Delete Data older than {db_delete_time_string}")
+    result = client.query(query)

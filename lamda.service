@@ -8,8 +8,8 @@ User=root
 Type=simple
 Restart=always
 WorkingDirectory=/home/pi/lamdaProjekt
-Environment="PATH=/home/pi/lamdaProjekt/lamda_env/bin"
-ExecStart=/home/pi/lamdaProjekt/lamda_env/bin/gunicorn -c gunicorn.conf.py starter:app
+Environment="PATH=/home/pi/lamdaProjekt/venv/bin"
+ExecStart=/home/pi/lamdaProjekt/.venv/bin/gunicorn -c gunicorn.conf.py starter:app
 
 [Install]
 WantedBy=multi-user.target

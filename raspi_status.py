@@ -1,9 +1,9 @@
 """
 Infos über den Pi bekommen
 """
-
 import platform
 import socket
+
 import psutil
 
 
@@ -65,15 +65,11 @@ def get_ram_info() -> dict:
     Returns:
         dict: Data in MB
     """
-    ram_total = round(psutil.virtual_memory().total / (1024*1024))
-    ram_available = round(psutil.virtual_memory().available / (1024*1024))
+    ram_total = round(psutil.virtual_memory().total / (1024 * 1024))
+    ram_available = round(psutil.virtual_memory().available / (1024 * 1024))
     ram_free_percent = round((100 / ram_total) * ram_available, 2)
 
-    ram_info = {
-        "ram_total": ram_total,
-        "ram_available": ram_available,
-        "ram_free_percent": ram_free_percent
-    }
+    ram_info = {"ram_total": ram_total, "ram_available": ram_available, "ram_free_percent": ram_free_percent}
 
     return ram_info
 
@@ -85,16 +81,11 @@ def get_disk_info() -> dict:
         dict: "total", "used", "free", "percent"
     """
 
-    disk_total = round(psutil.disk_usage("/").total / (1024*1024*1024), 2)
-    disk_used  = round(psutil.disk_usage("/").used  / (1024*1024*1024), 2)
-    disk_free  = round(psutil.disk_usage("/").free  / (1024*1024*1024), 2)
+    disk_total = round(psutil.disk_usage("/").total / (1024 * 1024 * 1024), 2)
+    disk_used = round(psutil.disk_usage("/").used / (1024 * 1024 * 1024), 2)
+    disk_free = round(psutil.disk_usage("/").free / (1024 * 1024 * 1024), 2)
     disk_free_percent = 100 - round(psutil.disk_usage("/").percent, 2)
 
-    data = {
-        "total": disk_total,
-        "used": disk_used,
-        "free": disk_free,
-        "percent": disk_free_percent
-    }
+    data = {"total": disk_total, "used": disk_used, "free": disk_free, "percent": disk_free_percent}
 
     return data

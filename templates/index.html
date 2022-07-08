@@ -10,139 +10,204 @@
     <link rel="icon" href="../static/images/maybach_logo_icon_145803.ico">
 
     <link rel="stylesheet" href="../static/css/w3.css">
+    <link rel="stylesheet" href="../static/css/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="../static/css/my.css">
 
 </head>
 
-<body>
+<body class="mybackround">
 
-    <!-- Oberer Bereich -->
-    <div class="w3-row" style="height: 5%;">
-        <div class="w3-cell" style="padding: 5px;">
-            Aufnahme
-            <!-- Rounded switch -->
+    <!-- Header -->
+    <header class="w3-bar">
+        <div class="w3-bar-item">
+            Aufnahme:
             <label class="switch">
                 <input id="recording" type="checkbox">
                 <span class="slider round"></span>
             </label>
         </div>
-        <div class="w3-cell w3-hide-small">
-            <button id="btnHistory" class="w3-button w3-round-large w3-border" style="margin-right: 5px;"
-                onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
-        </div>
-        <div class="w3-cell w3-hide-small">
-            <button class="w3-button w3-round-large w3-border"
-                onclick="location.href='http://192.168.1.1:80/system';">System</button>
-        </div>
-    </div>
+
+        <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears" style="font-size:24px"
+            onclick="openMenue()"></i>
+    </header>
 
     <!-- Mittlerer Bereich -->
-    <div class="w3-cell-row" style="height: 90%;">
+    <div class="w3-cell-row w3-display-container" style="height: 90%;">
         <!-- Linke Seite / Bank 1 -->
-        <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p class="bank">Bank 1</p>
+        <div id="bank1" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
+            <p id="bank1Label" class="bank">Bank 1 &#128993;</p>
             <p id="lamda1" class="lamda">9,999 &lambda;</p>
             <p id="afr1" class="afr">9,999 AFR</p>
         </div>
 
         <!-- Rechte Seite / Bank 2 -->
-        <div class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p class="bank">Bank 2</p>
+        <div id="bank2" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
+            <p id="bank2Label" class="bank">Bank 2 &#128308;</p>
             <p id="lamda2" class="lamda">9,999 &lambda;</p>
             <p id="afr2" class="afr">9,999 AFR</p>
         </div>
+        <img src="../static/images/Legende.png" alt="Legende" class="w3-display-bottomright" height="25%"
+            style="padding-bottom: 20px; padding-right: 20px;">
     </div>
 
     <!-- Unterer Bereich -->
     <div class="w3-row w3-center w3-border-top" style="height: 3%; ">
-        &copy; {{ currentYear }} - 2021 by Florian Glaser
+        &copy; 2021 - {{ current_year }} by Florian Glaser
     </div>
 
 
-</body>
+    <!-- Modal -->
+    <div id="menueModal" class="w3-modal">
+        <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="background-color: rgb(156, 151, 151);">
 
-</html>
+            <div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
+                <span onclick="document.getElementById('menueModal').style.display='none'"
+                    class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+                <h3>Einstellungen</h3>
+            </div>
+
+            <form class="w3-container w3-padding-16">
+                <h4>Anzuzeigende Banken:</h4>
+                <input class="w3-check" type="checkbox" checked="checked"
+                    onchange="$('#bank1').toggle(); $('.mybackround').toggleClass('hidden');">
+                <label>Bank 1 &#128993</label><br>
+
+                <input class="w3-check" type="checkbox" checked="checked"
+                    onchange="$('#bank2').toggle(); $('.mybackround').toggleClass('hidden');">
+                <label>Bank 2 &#128308</label><br>
+
+                <h4>Anzuzeigende Nachkommastellen:</h4>
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="1" checked>
+                <label>1</label><br>
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="2" checked>
+                <label>2</label><br>
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="3" checked>
+                <label>3</label><br>
+
+                <hr>
+
+                <h4>Korrekturfaktor für Lamdaberechnung:</h4>
+                <label>Neukalibrierung? </label><input class="w3-check" type="checkbox"
+                    onchange=toggle_correction()><br>
+                <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
+                    verändert werden !!!"</p>
+                <br>
+                <label>Bank 1 &#128993</label><br>
+                <input id="correction_bank_1" class="w3-input" style="width:30%" type="text"
+                    value="{{ correction_bank_1 }}" placeholder="0.511" disabled>
+                <br>
+                <label>Bank 2 &#128308</label><br>
+                <input id="correction_bank_2" class="w3-input" style="width:30%" type="text"
+                    value="{{ correction_bank_2 }}" placeholder="0.511" disabled>
+            </form>
+
+            <div class="w3-container w3-padding-16">
+                <button id="btnHistory" class="w3-button w3-round-large w3-border w3-hide-small"
+                    onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
+                <button class="w3-button w3-round-large w3-border"
+                    onclick="location.href='http://192.168.1.1/system';">System</button>
+                <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
+                    onclick=save_settings()>Speichern</button>
+            </div>
+        </div>
+    </div>
+
+</body>
 
 <script src="../static/javascript/jquery-3.5.1.min.js"></script>
 <script src="../static/javascript/socket.io.min.js"></script>
+<script src="../static/javascript/mySockets.js"></script>
 
 <script type="text/javascript" charset="utf-8">
 
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    const UPDATE_INTERVALL = {{ update_intervall }};
+    const menueModal = $("#menueModal");
 
-    $("#recording").change(function () {
+    $(document).ready(function () {
+        $("#recording").click(toogleRecording);
+    });
+
+
+    function toogleRecording() {
         if ($("#recording").prop("checked")) {
 
             // Hide Button wenn aufgenommen wird
-            $(':button').hide("slow");
+            $('#menueIcon').hide("slow");
 
             socket.emit("recording", {
                 "recording": true
             });
         } else {
             // Show Button wenn aufgenommen stoppt
-            $(':button').show("slow");
+            $('#menueIcon').show("slow");
 
             socket.emit("recording", {
                 "recording": false
             });
         }
-    });
+    }
 
-    socket.on('connect', function () {
-        let browserTime = new Date().toISOString()
+    function openMenue() {
+        update_setting_text();
+        menueModal.css("display", "block");
+    }
 
-        socket.emit('connected', {
-            data: browserTime
-        })
+    function save_settings() {
 
-    })
+        let correction_bank_1 = $("#correction_bank_1").val();
+        let correction_bank_2 = $("#correction_bank_2").val();
 
-    socket.on('disconnect', function () {
-        socket.emit('disconnect', {
-            data: 'User Disconnected'
-        })
+        correction_bank_1 = correction_bank_1.replace(",", ".");
+        correction_bank_2 = correction_bank_2.replace(",", ".");
 
-    })
-
-    socket.on('newValues', function (values) {
-        // console.log(JSON.stringify(values));
-
-        $('#lamda1').html(values.lamda1.toFixed(3) + " &lambda;");
-        $('#lamda2').html(values.lamda2.toFixed(3) + " &lambda;");
-        $('#afr1').html(values.afr1.toFixed(2) + " AFR");
-        $('#afr2').html(values.afr2.toFixed(2) + " AFR");
-
-        console.log("Volt 1: " + values.volt1.toFixed(2));
-        console.log("Volt 2: " + values.volt2.toFixed(2));
-
-        // Sind die Werte von Lamda entsprechend, wird der Text erst Orange und dann Rot
-        if (values.lamda1 >= 1.12 || values.lamda1 <= 0.86) {
-            if (values.lamda1 >= 1.20 || values.lamda1 <= 0.80) {
-                $('#lamda1').css("color", "#b30000")
-                // $('#afr1').css("color", "#b30000")
-            } else {
-                $('#lamda1').css("color", "#e36f27")
-                // $('#afr1').css("color", "#e36f27")
-            }
-        } else {
-            $('#lamda1').css("color", "#000000")
-            // $('#afr1').css("color", "#000000")
+        data = {
+            "correction_bank_1": correction_bank_1,
+            "correction_bank_2": correction_bank_2
         }
 
-        if (values.lamda2 >= 1.12 || values.lamda2 <= 0.86) {
-            if (values.lamda2 >= 1.20 || values.lamda2 <= 0.80) {
-                $('#lamda2').css("color", "#b30000")
-                // $('#afr2').css("color", "#b30000")
-            } else {
-                $('#lamda2').css("color", "#e36f27")
-                // $('#afr2').css("color", "#e36f27")
-            }
+        $.ajax({
+            type: "POST",
+            url: "/correction",
+            data: data,
+            statusCode: {
+                400: () => {
+                    alert("Settings not Saved! Please check!");
+                },
+                200: () => {
+                    alert("Settings Saved!");
+                }
+            },
+            dataType: "json"
+        });
+        document.getElementById('menueModal').style.display = 'none'
+    }
+
+    function update_setting_text() {
+        $.ajax({
+            type: "GET",
+            url: "/correction",
+            success: (data, textStatus, jqXHR) => {
+                $("#correction_bank_1").val(data["correction_bank_1"]);
+                $("#correction_bank_2").val(data["correction_bank_2"]);
+            },
+            dataType: "json"
+        });
+    }
+
+    function toggle_correction() {
+
+        if ($('#warning').is(':visible')) {
+            $('#correction_bank_1').prop('disabled', true);
+            $('#correction_bank_2').prop('disabled', true);
         } else {
-            $('#lamda2').css("color", "#000000")
-            // $('#afr2').css("color", "#000000")
+            alert("ACHTUNG!\nEingabe darf nur bei einer Neukalibrierung verändert werden!");
+            $('#correction_bank_1').prop('disabled', false);
+            $('#correction_bank_2').prop('disabled', false);
         }
 
-    })
+        $('#warning').toggle();
+    }
 
 </script>
+
+</html>
