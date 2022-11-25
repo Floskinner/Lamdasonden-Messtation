@@ -84,6 +84,10 @@
                 <input class="w3-radio" type="radio" name="nachkommastellen" value="3">
                 <label>3</label><br>
 
+                <h4>Blinken der Werte im roten Bereich:</h4>
+                <input class="w3-check" type="checkbox" onchange=toggle_blinking(this)>
+                <label>Blinken</label><br>
+
                 <hr>
 
                 <h4>Korrekturfaktor für Lamdaberechnung:</h4>
@@ -206,6 +210,10 @@
         }
 
         $('#warning').toggle();
+    }
+
+    function toggle_blinking(checkbox) {
+        blinking = checkbox.checked;
     }
 
 </script>
