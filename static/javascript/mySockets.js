@@ -19,11 +19,17 @@ socket.on('connect', function () {
 
 });
 
-socket.on('disconnect', function () {
-    socket.emit('disconnect', {
-        data: 'User Disconnected'
-    });
+socket.on("connect_error", (error) => {
+    console.log("Error connecting to server: " + error);
+});
 
+socket.on("disconnect", (reason) => {
+    console.log("Disconnected from server: " + reason);
+    if (reason === "io server disconnect") {
+        // the disconnection was initiated by the server, you need to reconnect manually
+        socket.connect();
+    }
+    // else the socket will automatically try to reconnect
 });
 
 socket.on('newValues', function (values) {
@@ -70,12 +76,12 @@ function checkErrors(htmlBankLabel, htmlLamda, htmlAFR, voltage) {
 
     if (Math.abs(voltage) <= 0.15) {
         // label += " - Fehler";
-        color= "#b30000";
+        color = "#b30000";
         lamda = "Fehler";
         afr = "--------";
     } else if (Math.abs(voltage) <= 0.2) {
         // label += " - Heizphase";
-        color= "#b30000";
+        color = "#b30000";
         lamda = "Heizphase";
         afr = "--------";
     }
