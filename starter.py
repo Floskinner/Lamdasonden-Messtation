@@ -98,6 +98,9 @@ def update_data(update_interval: float, messure_interval: float):
 
         socketio.emit("newValues", data, broadcast=True)
 
+        # Ohne warten wird emit nicht zuverlässig durchgeführt
+        socketio.sleep(0.01)
+
         if IS_RECORDING:
             record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
             record_thread.start()
@@ -255,11 +258,6 @@ def recording(json: dict):
         IS_RECORDING = False
         write_to_systemd("stoppe Aufnahme")
 
-
-if __name__ == "__main__":
-    socketio.run(app, debug=True, port=8080, host="0.0.0.0")
-
-
 # Clean data from DB older than 6 Months
 if os.environ.get("FLASK_ENV") != "development":
     db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
@@ -268,3 +266,6 @@ if os.environ.get("FLASK_ENV") != "development":
     query = "DELETE WHERE time < '" + db_delete_time_string + "'"
     write_to_systemd(f"Delete Data older than {db_delete_time_string}")
     result = client.query(query)
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True, port=8080, host="0.0.0.0")
