@@ -275,9 +275,9 @@ def recording(json: dict):
 
 # Clean data from DB older than 6 Months
 if os.environ.get("FLASK_ENV") != "development":
-    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
-        "%Y-%m-%d"
-    )
+    db_delete_time_string = (
+        datetime.datetime.now() - datetime.timedelta(days=getattr(config, "DB_DELETE_AELTER_ALS"))
+    ).strftime("%Y-%m-%d")
     query = "DELETE WHERE time < '" + db_delete_time_string + "'"
     write_to_systemd(f"Delete Data older than {db_delete_time_string}")
     result = client.query(query)

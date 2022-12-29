@@ -2,10 +2,11 @@
 Hier weden grundelgende Einstellungen / Variablen definiert, die im ganzen Programm verwendet werden
 """
 import json
+import os
 from pathlib import Path
 from typing import Dict
 
-setting_path = Path("settings.json")
+setting_path = Path("settings_example.json") if os.environ.get("FLASK_ENV") == "development" else Path("settings.json")
 
 
 def read_settings(file_path: Path) -> Dict:
@@ -20,7 +21,6 @@ def save_settings(file_path: Path, values: Dict) -> None:
 
 
 class Config:
-
     def __init__(self):
         self.__load_settings()
 
@@ -31,7 +31,7 @@ class Config:
             setattr(self, name, value)
 
     def update_setting(self, name: str, value: any):
-        """ Aktualisiert eine Einstellung
+        """Aktualisiert eine Einstellung
 
         :param name: Name der Einstellung
         :param value: Wert der Einstellung
@@ -42,7 +42,7 @@ class Config:
         self.__load_settings()
 
     def get_settings(self) -> Dict:
-        """ Gibt die aktuellen Einstellungen zurück
+        """Gibt die aktuellen Einstellungen zurück
 
         :return: Dict mit den Einstellungen als Inhalt.
         """
