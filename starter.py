@@ -141,32 +141,42 @@ def index():
 
     template_data = {
         "current_year": current_year,
-        "update_intervall": config.UPDATE_INTERVAL * 1000,  # To convert to ms
-        "correction_bank_1": config.KORREKTURFAKTOR_BANK_1,
-        "correction_bank_2": config.KORREKTURFAKTOR_BANK_2,
+        "update_intervall": getattr(config, "UPDATE_INTERVAL") * 1000,  # To convert to ms
     }
+    template_data.update(config.get_settings())
 
     return render_template("index.html", **template_data)
 
 
-@app.route("/correction", methods=["GET", "POST"])
-def update_correction():
-    if request.method == "GET":
-        return {"correction_bank_1": config.KORREKTURFAKTOR_BANK_1, "correction_bank_2": config.KORREKTURFAKTOR_BANK_2}
+@app.route("/settings", methods=["POST"])
+def update_settings():
+    """Update der Einstellungen
 
-    else:
-        data: dict = request.form
-        try:
-            correction_bank_1 = float(data["correction_bank_1"])
-            correction_bank_2 = float(data["correction_bank_2"])
+    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """
+    data: dict = request.form
+    try:
+        for key, value in data.items():
+            if value == "":
+                return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+            config.update_setting(key, value)
+    except KeyError as error:
+        print(error)
+        return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+    except Exception as error:
+        print(error)
+        return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
 
-            config.update_setting("KORREKTURFAKTOR_BANK_1", correction_bank_1)
-            config.update_setting("KORREKTURFAKTOR_BANK_2", correction_bank_2)
-        except Exception as e:
-            print(e)
-            return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+    return Response("Success", status=200)
 
-        return Response("Success", status=200)
+
+@app.route("/settings", methods=["GET"])
+def get_settings():
+    """Gibt die aktuellen Einstellungen zurück
+
+    :return: Response mit Statuscode 200 wenn erfolgreich. JSON mit den Einstellungen als Inhalt.
+    """
+    return config.get_settings()
 
 
 @app.route("/system")
@@ -216,7 +226,11 @@ def connected(json: dict):
     if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(update_data, config.UPDATE_INTERVAL, config.MESSURE_INTERVAL)
+        THREAD = socketio.start_background_task(
+            update_data,
+            getattr(config, "UPDATE_INTERVAL"),
+            getattr(config, "MESSURE_INTERVAL"),
+        )
 
 
 @socketio.on("disconnect")
@@ -258,11 +272,12 @@ def recording(json: dict):
         IS_RECORDING = False
         write_to_systemd("stoppe Aufnahme")
 
+
 # Clean data from DB older than 6 Months
 if os.environ.get("FLASK_ENV") != "development":
-    db_delete_time_string = (datetime.datetime.now() - datetime.timedelta(days=config.DB_DELETE_AELTER_ALS)).strftime(
-        "%Y-%m-%d"
-    )
+    db_delete_time_string = (
+        datetime.datetime.now() - datetime.timedelta(days=getattr(config, "DB_DELETE_AELTER_ALS"))
+    ).strftime("%Y-%m-%d")
     query = "DELETE WHERE time < '" + db_delete_time_string + "'"
     write_to_systemd(f"Delete Data older than {db_delete_time_string}")
     result = client.query(query)

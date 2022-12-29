@@ -66,6 +66,26 @@ Der Webserver wird mithilfe von [Flask](https://flask.palletsprojects.com/en/1.1
 ### MCP3008
 Eine Verwendung für den MCP3008 findet man hier -> [Anleitung](https://tutorials-raspberrypi.de/raspberry-pi-mcp3008-analoge-signale-auslesen/)
 
+## Konfigurationen
+Es gibt eine Beispielkonfiguration [`settings_example.json`](settings_example.json). Diese kann als Vorlage verwendet werden und beinhaltet die Initialen ertesteten besten Werte. Wird das ganze Produtktiv verwendet (`FLASK_ENV = "prod"`), so muss eine Datei namens `settings.json` mit den entsprechenden Werten wie in der Beispieldatei vorhanden sein.
+
+```json
+{
+    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH 
+    "KORREKTURFAKTOR_BANK_1": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
+    "KORREKTURFAKTOR_BANK_2": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
+    "MESSURE_INTERVAL": 0.01, // Messintervall in Sekunden
+    "UPDATE_INTERVAL": 1.5, // Updateintervall in Sekunden der Anzeige
+    "DB_DELETE_AELTER_ALS": 180, // Löschen in Tage der DB Einträge
+    "ANZEIGEN_BANK_1": true, // Bank 1 wird beim aufruf angezeigt
+    "ANZEIGEN_BANK_2": true, // Bank 2 wird beim aufruf angezeigt
+    "NACHKOMMASTELLEN": 2, // Initiale Anzeige der Nachkommastellen
+    "WARNUNG_BLINKEN": false // Blinken im roten Bereich aktivieren
+}
+```
+
+---
+
 ## Randbemerkungen
 - Der Pi wird intern der MAMA direkt mit 5V versorgt
 - Die Uhrzeit vom Pi wird mithilfe vom Browser aktuallisiert, jedes mal wenn man die index.html aufruft
