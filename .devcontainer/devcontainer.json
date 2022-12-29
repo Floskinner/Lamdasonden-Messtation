@@ -15,7 +15,8 @@
 			"oderwat.indent-rainbow",
 			"ms-python.vscode-pylance",
 			"Gruntfuggly.todo-tree",
-			"yzhang.markdown-all-in-one"
+			"yzhang.markdown-all-in-one",
+			"samuelcolvin.jinjahtml"
 		]
       }
 	},
