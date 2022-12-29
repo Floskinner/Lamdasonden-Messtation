@@ -24,7 +24,7 @@ app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
 GPIO = GPIO_Reader()
-THREAD = Thread()
+UPDATE_DATA_THREAD = None
 THREAD_STOP_EVENT = Event()
 
 CONNECTIONS_COUNTER = 0
@@ -211,7 +211,7 @@ def connected(json: dict):
         json (dict): Key ["data"] welcher die Uhrzeit als ISO 8601 String enthält
     """
 
-    global THREAD
+    global UPDATE_DATA_THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
 
@@ -222,10 +222,10 @@ def connected(json: dict):
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1
 
-    if not THREAD.is_alive():
+    if UPDATE_DATA_THREAD is None or not UPDATE_DATA_THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(
+        UPDATE_DATA_THREAD = socketio.start_background_task(
             update_data,
             getattr(config, "UPDATE_INTERVAL"),
             getattr(config, "MESSURE_INTERVAL"),
