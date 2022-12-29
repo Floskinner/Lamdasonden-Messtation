@@ -34,6 +34,13 @@ socket.on("disconnect", (reason) => {
     // else the socket will automatically try to reconnect
 });
 
+socket.on('disconnect', function () {
+    socket.emit('disconnect', {
+        data: 'User Disconnected'
+    });
+});
+
+
 socket.on('newValues', function (values) {
     // console.log(JSON.stringify(values));
 
