@@ -7,7 +7,6 @@ import sys
 import time
 from threading import Event
 from threading import Thread
-from typing import Dict
 
 from flask import Flask
 from flask import render_template
