@@ -5,6 +5,7 @@ import datetime
 import os
 import sys
 import time
+import traceback
 from threading import Event
 from threading import Thread
 
@@ -59,50 +60,72 @@ def update_data(update_interval: float, messure_interval: float):
     Args:
         interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
     """
+    try:
 
-    sampling_rate = messure_interval
-    number_of_lamda_values = round(update_interval / sampling_rate)
+        sampling_rate = messure_interval
+        number_of_lamda_values = round(update_interval / sampling_rate)
 
-    while not THREAD_STOP_EVENT.isSet():
+        while not THREAD_STOP_EVENT.isSet():
 
-        lamda_values = []
-        for _ in range(number_of_lamda_values):
-            data = GPIO.getData()
-            lamda_values.append(data)
-            time.sleep(sampling_rate)
+            lamda_values = []
+            for _ in range(number_of_lamda_values):
+                data = GPIO.getData()
+                lamda_values.append(data)
+                time.sleep(sampling_rate)
 
-        sum_of_lamda1 = 0
-        sum_of_lamda2 = 0
-        sum_of_volt1 = 0
-        sum_of_volt2 = 0
-        sum_of_afr1 = 0
-        sum_of_afr2 = 0
+            sum_of_lamda1 = 0
+            sum_of_lamda2 = 0
+            sum_of_volt1 = 0
+            sum_of_volt2 = 0
+            sum_of_afr1 = 0
+            sum_of_afr2 = 0
 
-        for lamda_value in lamda_values:
-            sum_of_lamda1 += lamda_value["lamda1"]
-            sum_of_lamda2 += lamda_value["lamda2"]
-            sum_of_volt1 += lamda_value["volt1"]
-            sum_of_volt2 += lamda_value["volt2"]
-            sum_of_afr1 += lamda_value["afr1"]
-            sum_of_afr2 += lamda_value["afr2"]
+            for lamda_value in lamda_values:
+                sum_of_lamda1 += lamda_value["lamda1"]
+                sum_of_lamda2 += lamda_value["lamda2"]
+                sum_of_volt1 += lamda_value["volt1"]
+                sum_of_volt2 += lamda_value["volt2"]
+                sum_of_afr1 += lamda_value["afr1"]
+                sum_of_afr2 += lamda_value["afr2"]
 
-        data = {
-            "lamda1": sum_of_lamda1 / number_of_lamda_values,
-            "lamda2": sum_of_lamda2 / number_of_lamda_values,
-            "volt1": sum_of_volt1 / number_of_lamda_values,
-            "volt2": sum_of_volt2 / number_of_lamda_values,
-            "afr1": sum_of_afr1 / number_of_lamda_values,
-            "afr2": sum_of_afr2 / number_of_lamda_values,
-        }
+            data = {
+                "lamda1": sum_of_lamda1 / number_of_lamda_values,
+                "lamda2": sum_of_lamda2 / number_of_lamda_values,
+                "volt1": sum_of_volt1 / number_of_lamda_values,
+                "volt2": sum_of_volt2 / number_of_lamda_values,
+                "afr1": sum_of_afr1 / number_of_lamda_values,
+                "afr2": sum_of_afr2 / number_of_lamda_values,
+            }
 
-        socketio.emit("newValues", data, broadcast=True)
+            socketio.emit("newValues", data, broadcast=True)
 
-        # Ohne warten wird emit nicht zuverlässig durchgeführt
-        socketio.sleep(0.01)
+            # Ohne warten wird emit nicht zuverlässig durchgeführt
+            socketio.sleep(0.01)
 
-        if IS_RECORDING:
-            record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
-            record_thread.start()
+            if IS_RECORDING:
+                record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
+                record_thread.start()
+
+    except AttributeError:
+        socketio.emit(
+            "error",
+            {
+                "type": "config",
+                "exc": traceback.format_exc().splitlines()[-1],
+                "traceback": traceback.format_exc(),
+            },
+            broadcast=True,
+        )
+    except Exception:
+        socketio.emit(
+            "error",
+            {
+                "type": "unknown",
+                "exc": traceback.format_exc().splitlines()[-1],
+                "traceback": traceback.format_exc(),
+            },
+            broadcast=True,
+        )
 
 
 def write_to_db(data: dict):
