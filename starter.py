@@ -133,7 +133,7 @@ def write_to_db(data: dict):
 @app.route("/")
 def index():
     """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/" aufgerufen wird
-    Rendert und gibt das Template index.html zurück
+    Rendert und gibt das Template index.jinja zurück
     """
     now = datetime.datetime.now()
     current_year = now.strftime("%Y")
@@ -144,7 +144,7 @@ def index():
     }
     template_data.update(config.get_settings())
 
-    return render_template("index.html", **template_data)
+    return render_template("index.jinja", **template_data)
 
 
 @app.route("/settings", methods=["POST"])
@@ -181,7 +181,7 @@ def get_settings():
 @app.route("/system")
 def system():
     """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/system" aufgerufen wird
-    Rendert und gibt das Template system.html zurück
+    Rendert und gibt das Template system.jinja zurück
     """
 
     system_data = {
@@ -198,7 +198,7 @@ def system():
         "os_disk_free_percent": pi.get_disk_info().get("percent"),
     }
 
-    return render_template("system.html", **system_data)
+    return render_template("system.jinja", **system_data)
 
 
 @socketio.on("connected")
