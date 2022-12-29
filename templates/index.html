@@ -68,46 +68,52 @@
 
             <form class="w3-container w3-padding-16">
                 <h4>Anzuzeigende Banken:</h4>
-                <input id="bank1-show" class="w3-check" type="checkbox" checked="checked">
+                <input id="bank1-show" class="w3-check" type="checkbox" {% if ANZEIGEN_BANK_1 %} checked="checked" {%
+                    endif %}>
                 <label>Bank 1 &#128993</label><br>
 
-                <input id="bank2-show" class="w3-check" type="checkbox" checked="checked">
+                <input id="bank2-show" class="w3-check" type="checkbox" {% if ANZEIGEN_BANK_2 %} checked="checked" {%
+                    endif %}>
                 <label>Bank 2 &#128308</label><br>
 
                 <h4>Anzuzeigende Nachkommastellen:</h4>
-                <input class="w3-radio" type="radio" name="nachkommastellen" value="1">
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="1" {% if NACHKOMMASTELLEN==1 %}
+                    checked {% endif %}>
                 <label>1</label><br>
-                <input class="w3-radio" type="radio" name="nachkommastellen" value="2" checked>
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="2" {% if NACHKOMMASTELLEN==2 %}
+                    checked {% endif %}>
                 <label>2</label><br>
-                <input class="w3-radio" type="radio" name="nachkommastellen" value="3">
+                <input class="w3-radio" type="radio" name="nachkommastellen" value="3" {% if NACHKOMMASTELLEN==3 %}
+                    checked {% endif %}>
                 <label>3</label><br>
 
                 <h4>Blinken der Werte im roten Bereich:</h4>
-                <input id="blink" class="w3-check" type="checkbox">
+                <input id="blink" class="w3-check" type="checkbox" {% if WARNUNG_BLINKEN %} checked="checked" {% endif
+                    %}>
                 <label>Blinken</label><br>
 
                 <hr>
 
                 <h4>Korrekturfaktor für Lamdaberechnung:</h4>
-                <label>Neukalibrierung? </label><input name="do_neukalibrierung" class="w3-check" type="checkbox"
+                <label>Neukalibrierung? </label><input id="do_neukalibrierung" class="w3-check" type="checkbox"
                     onchange=toggle_correction()><br>
                 <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
                     verändert werden !!!"</p>
                 <br>
                 <label>Bank 1 &#128993</label><br>
                 <input id="correction_bank_1" class="w3-input" style="width:30%" type="text"
-                    value="{{ correction_bank_1 }}" placeholder="0.511" disabled>
+                    value="{{ KORREKTURFAKTOR_BANK_1 }}" placeholder="0.511" disabled>
                 <br>
                 <label>Bank 2 &#128308</label><br>
                 <input id="correction_bank_2" class="w3-input" style="width:30%" type="text"
-                    value="{{ correction_bank_2 }}" placeholder="0.511" disabled>
+                    value="{{ KORREKTURFAKTOR_BANK_2 }}" placeholder="0.511" disabled>
             </form>
 
             <div class="w3-container w3-padding-16">
                 <button id="btnHistory" class="w3-button w3-round-large w3-border w3-hide-small"
                     onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
                 <button class="w3-button w3-round-large w3-border"
-                    onclick="location.href='http://192.168.1.1/system';">System</button>
+                    onclick="location.href='{{ url_for('system') }}'">System</button>
                 <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
                     onclick=save_settings()>Speichern</button>
             </div>
@@ -127,6 +133,11 @@
 
     $(document).ready(function () {
         $("#recording").click(toogleRecording);
+
+        // Anwenden der Konfiguration
+        show_banks({{ ANZEIGEN_BANK_1 | default("true") | lower}}, {{ ANZEIGEN_BANK_2 | default("true") | lower}});
+        blinking = {{ WARNUNG_BLINKEN | default("false") | lower }};
+        decimalPlaces = {{ NACHKOMMASTELLEN | default("2") }};
     });
 
 
@@ -150,7 +161,7 @@
     }
 
     function openMenue() {
-        update_setting_text();
+        // update_setting_text();
         menueModal.css("display", "block");
     }
 
@@ -160,8 +171,8 @@
         const blink = $("#blink").prop("checked");
         const bank1 = $("#bank1-show").prop("checked");
         const bank2 = $("#bank2-show").prop("checked");
-        const nachkommastellen = $("input[name='nachkommastellen']:checked").val();
-        
+        const nachkommastellen = parseInt($("input[name='nachkommastellen']:checked").val());
+
         // Daten für das Backend zum speichern
         data = {
             "WARNUNG_BLINKEN": blink,
@@ -171,11 +182,11 @@
         }
 
         // Korrekturfaktoren nur auslesen wenn Neukalibrierung
-        if ( $("#do_neukalibrierung").prop("checked") ) {
+        if ($("#do_neukalibrierung").prop("checked")) {
             const correction_bank_1 = $("#correction_bank_1").val().replace(",", ".");
             const correction_bank_2 = $("#correction_bank_2").val().replace(",", ".");
-            data["CORRECTION_BANK_1"] = correction_bank_1;
-            data["CORRECTION_BANK_2"] = correction_bank_2;
+            data["KORREKTURFAKTOR_BANK_1"] = correction_bank_1;
+            data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
         }
 
         // Daten zum Backend senden und speichern
@@ -211,8 +222,8 @@
                 $("#correction_bank_1").val(data["CORRECTION_BANK_1"]);
                 $("#correction_bank_2").val(data["CORRECTION_BANK_2"]);
                 $("#blink").prop("checked", data["WARNUNG_BLINKEN"]);
-                $("#bank1").prop("checked", data["ANZEIGEN_BANK_1"]);
-                $("#bank2").prop("checked", data["ANZEIGEN_BANK_2"]);
+                $("#bank1-show").prop("checked", data["ANZEIGEN_BANK_1"]);
+                $("#bank2-show").prop("checked", data["ANZEIGEN_BANK_2"]);
                 $("input[name='nachkommastellen'][value='" + data["NACHKOMMASTELLEN"] + "']").prop("checked", true);
             },
             dataType: "json"

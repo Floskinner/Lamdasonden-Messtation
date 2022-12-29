@@ -10,8 +10,8 @@ const MAX_ABOVE_RED = 1.20;
 const MAX_BELOW_ORANGE = 0.86;
 const MAX_BELOW_RED = 0.80;
 
-let blinking = false;
-let decimalPlaces = $("input[name='nachkommastellen']:checked").val();
+let blinking = undefined;
+let decimalPlaces = undefined;
 
 socket.on('connect', function () {
     let browserTime = new Date().toISOString();
