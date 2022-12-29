@@ -141,10 +141,9 @@ def index():
 
     template_data = {
         "current_year": current_year,
-        "update_intervall": config.UPDATE_INTERVAL * 1000,  # To convert to ms
-        "correction_bank_1": config.KORREKTURFAKTOR_BANK_1,
-        "correction_bank_2": config.KORREKTURFAKTOR_BANK_2,
+        "update_intervall": getattr(config, "UPDATE_INTERVAL") * 1000,  # To convert to ms
     }
+    template_data.update(config.get_settings())
 
     return render_template("index.html", **template_data)
 
@@ -227,7 +226,11 @@ def connected(json: dict):
     if not THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(update_data, config.UPDATE_INTERVAL, config.MESSURE_INTERVAL)
+        THREAD = socketio.start_background_task(
+            update_data,
+            getattr(config, "UPDATE_INTERVAL"),
+            getattr(config, "MESSURE_INTERVAL"),
+        )
 
 
 @socketio.on("disconnect")
