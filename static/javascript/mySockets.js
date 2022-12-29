@@ -11,6 +11,7 @@ const MAX_BELOW_ORANGE = 0.86;
 const MAX_BELOW_RED = 0.80;
 
 let blinking = false;
+let decimalPlaces = $("input[name='nachkommastellen']:checked").val();
 
 socket.on('connect', function () {
     let browserTime = new Date().toISOString();
@@ -66,8 +67,6 @@ socket.on('newValues', function (values) {
 
 
 function updateValuesOnScreen(lamda1, lamda2, afr1, afr2) {
-    const decimalPlaces = $("input[name='nachkommastellen']:checked").val();
-
     $('#lamda1').html(lamda1.toFixed(decimalPlaces) + " &lambda;");
     $('#lamda2').html(lamda2.toFixed(decimalPlaces) + " &lambda;");
     $('#afr1').html(afr1.toFixed(2) + " AFR");

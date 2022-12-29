@@ -68,12 +68,10 @@
 
             <form class="w3-container w3-padding-16">
                 <h4>Anzuzeigende Banken:</h4>
-                <input class="w3-check" type="checkbox" checked="checked"
-                    onchange="$('#bank1').toggle(); $('.mybackround').toggleClass('hidden');">
+                <input id="bank1-show" class="w3-check" type="checkbox" checked="checked">
                 <label>Bank 1 &#128993</label><br>
 
-                <input class="w3-check" type="checkbox" checked="checked"
-                    onchange="$('#bank2').toggle(); $('.mybackround').toggleClass('hidden');">
+                <input id="bank2-show" class="w3-check" type="checkbox" checked="checked">
                 <label>Bank 2 &#128308</label><br>
 
                 <h4>Anzuzeigende Nachkommastellen:</h4>
@@ -85,13 +83,13 @@
                 <label>3</label><br>
 
                 <h4>Blinken der Werte im roten Bereich:</h4>
-                <input class="w3-check" type="checkbox" onchange=toggle_blinking(this)>
+                <input id="blink" class="w3-check" type="checkbox">
                 <label>Blinken</label><br>
 
                 <hr>
 
                 <h4>Korrekturfaktor für Lamdaberechnung:</h4>
-                <label>Neukalibrierung? </label><input class="w3-check" type="checkbox"
+                <label>Neukalibrierung? </label><input name="do_neukalibrierung" class="w3-check" type="checkbox"
                     onchange=toggle_correction()><br>
                 <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
                     verändert werden !!!"</p>
@@ -158,20 +156,32 @@
 
     function save_settings() {
 
-        let correction_bank_1 = $("#correction_bank_1").val();
-        let correction_bank_2 = $("#correction_bank_2").val();
-
-        correction_bank_1 = correction_bank_1.replace(",", ".");
-        correction_bank_2 = correction_bank_2.replace(",", ".");
-
+        // Neue Werte auslesen
+        const blink = $("#blink").prop("checked");
+        const bank1 = $("#bank1-show").prop("checked");
+        const bank2 = $("#bank2-show").prop("checked");
+        const nachkommastellen = $("input[name='nachkommastellen']:checked").val();
+        
+        // Daten für das Backend zum speichern
         data = {
-            "correction_bank_1": correction_bank_1,
-            "correction_bank_2": correction_bank_2
+            "WARNUNG_BLINKEN": blink,
+            "ANZEIGEN_BANK_1": bank1,
+            "ANZEIGEN_BANK_2": bank2,
+            "NACHKOMMASTELLEN": nachkommastellen
         }
 
+        // Korrekturfaktoren nur auslesen wenn Neukalibrierung
+        if ( $("#do_neukalibrierung").prop("checked") ) {
+            const correction_bank_1 = $("#correction_bank_1").val().replace(",", ".");
+            const correction_bank_2 = $("#correction_bank_2").val().replace(",", ".");
+            data["CORRECTION_BANK_1"] = correction_bank_1;
+            data["CORRECTION_BANK_2"] = correction_bank_2;
+        }
+
+        // Daten zum Backend senden und speichern
         $.ajax({
             type: "POST",
-            url: "/correction",
+            url: "/settings",
             data: data,
             statusCode: {
                 400: () => {
@@ -179,23 +189,55 @@
                 },
                 200: () => {
                     alert("Settings Saved!");
+
+                    // Daten auf der Seite anpassen
+                    blinking = blink;
+                    show_banks(bank1, bank2);
+                    decimalPlaces = $("input[name='nachkommastellen']:checked").val();
                 }
             },
             dataType: "json"
         });
+
+        // Menue Modal schließen
         document.getElementById('menueModal').style.display = 'none'
     }
 
     function update_setting_text() {
         $.ajax({
             type: "GET",
-            url: "/correction",
+            url: "/settings",
             success: (data, textStatus, jqXHR) => {
-                $("#correction_bank_1").val(data["correction_bank_1"]);
-                $("#correction_bank_2").val(data["correction_bank_2"]);
+                $("#correction_bank_1").val(data["CORRECTION_BANK_1"]);
+                $("#correction_bank_2").val(data["CORRECTION_BANK_2"]);
+                $("#blink").prop("checked", data["WARNUNG_BLINKEN"]);
+                $("#bank1").prop("checked", data["ANZEIGEN_BANK_1"]);
+                $("#bank2").prop("checked", data["ANZEIGEN_BANK_2"]);
+                $("input[name='nachkommastellen'][value='" + data["NACHKOMMASTELLEN"] + "']").prop("checked", true);
             },
             dataType: "json"
         });
+    }
+
+    function show_banks(bank1, bank2) {
+        if (bank1) {
+            $("#bank1").show();
+        } else {
+            $("#bank1").hide();
+        }
+
+        if (bank2) {
+            $("#bank2").show();
+        } else {
+            $("#bank2").hide();
+        }
+
+        if (bank1 ^ bank2) {
+            $('.mybackround').addClass('hidden');
+        }
+        else {
+            $('.mybackround').removeClass('hidden');
+        }
     }
 
     function toggle_correction() {
@@ -210,10 +252,6 @@
         }
 
         $('#warning').toggle();
-    }
-
-    function toggle_blinking(checkbox) {
-        blinking = checkbox.checked;
     }
 
 </script>
