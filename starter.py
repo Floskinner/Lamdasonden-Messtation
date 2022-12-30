@@ -5,6 +5,7 @@ import datetime
 import os
 import sys
 import time
+import traceback
 from threading import Event
 from threading import Thread
 
@@ -24,7 +25,7 @@ app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
 GPIO = GPIO_Reader()
-THREAD = Thread()
+UPDATE_DATA_THREAD = None
 THREAD_STOP_EVENT = Event()
 
 CONNECTIONS_COUNTER = 0
@@ -59,50 +60,72 @@ def update_data(update_interval: float, messure_interval: float):
     Args:
         interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
     """
+    try:
 
-    sampling_rate = messure_interval
-    number_of_lamda_values = round(update_interval / sampling_rate)
+        sampling_rate = messure_interval
+        number_of_lamda_values = round(update_interval / sampling_rate)
 
-    while not THREAD_STOP_EVENT.isSet():
+        while not THREAD_STOP_EVENT.isSet():
 
-        lamda_values = []
-        for _ in range(number_of_lamda_values):
-            data = GPIO.getData()
-            lamda_values.append(data)
-            time.sleep(sampling_rate)
+            lamda_values = []
+            for _ in range(number_of_lamda_values):
+                data = GPIO.getData()
+                lamda_values.append(data)
+                time.sleep(sampling_rate)
 
-        sum_of_lamda1 = 0
-        sum_of_lamda2 = 0
-        sum_of_volt1 = 0
-        sum_of_volt2 = 0
-        sum_of_afr1 = 0
-        sum_of_afr2 = 0
+            sum_of_lamda1 = 0
+            sum_of_lamda2 = 0
+            sum_of_volt1 = 0
+            sum_of_volt2 = 0
+            sum_of_afr1 = 0
+            sum_of_afr2 = 0
 
-        for lamda_value in lamda_values:
-            sum_of_lamda1 += lamda_value["lamda1"]
-            sum_of_lamda2 += lamda_value["lamda2"]
-            sum_of_volt1 += lamda_value["volt1"]
-            sum_of_volt2 += lamda_value["volt2"]
-            sum_of_afr1 += lamda_value["afr1"]
-            sum_of_afr2 += lamda_value["afr2"]
+            for lamda_value in lamda_values:
+                sum_of_lamda1 += lamda_value["lamda1"]
+                sum_of_lamda2 += lamda_value["lamda2"]
+                sum_of_volt1 += lamda_value["volt1"]
+                sum_of_volt2 += lamda_value["volt2"]
+                sum_of_afr1 += lamda_value["afr1"]
+                sum_of_afr2 += lamda_value["afr2"]
 
-        data = {
-            "lamda1": sum_of_lamda1 / number_of_lamda_values,
-            "lamda2": sum_of_lamda2 / number_of_lamda_values,
-            "volt1": sum_of_volt1 / number_of_lamda_values,
-            "volt2": sum_of_volt2 / number_of_lamda_values,
-            "afr1": sum_of_afr1 / number_of_lamda_values,
-            "afr2": sum_of_afr2 / number_of_lamda_values,
-        }
+            data = {
+                "lamda1": sum_of_lamda1 / number_of_lamda_values,
+                "lamda2": sum_of_lamda2 / number_of_lamda_values,
+                "volt1": sum_of_volt1 / number_of_lamda_values,
+                "volt2": sum_of_volt2 / number_of_lamda_values,
+                "afr1": sum_of_afr1 / number_of_lamda_values,
+                "afr2": sum_of_afr2 / number_of_lamda_values,
+            }
 
-        socketio.emit("newValues", data, broadcast=True)
+            socketio.emit("newValues", data, broadcast=True)
 
-        # Ohne warten wird emit nicht zuverlässig durchgeführt
-        socketio.sleep(0.01)
+            # Ohne warten wird emit nicht zuverlässig durchgeführt
+            socketio.sleep(0.01)
 
-        if IS_RECORDING:
-            record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
-            record_thread.start()
+            if IS_RECORDING:
+                record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
+                record_thread.start()
+
+    except AttributeError:
+        socketio.emit(
+            "error",
+            {
+                "type": "config",
+                "exc": traceback.format_exc().splitlines()[-1],
+                "traceback": traceback.format_exc(),
+            },
+            broadcast=True,
+        )
+    except Exception:
+        socketio.emit(
+            "error",
+            {
+                "type": "unknown",
+                "exc": traceback.format_exc().splitlines()[-1],
+                "traceback": traceback.format_exc(),
+            },
+            broadcast=True,
+        )
 
 
 def write_to_db(data: dict):
@@ -133,7 +156,7 @@ def write_to_db(data: dict):
 @app.route("/")
 def index():
     """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/" aufgerufen wird
-    Rendert und gibt das Template index.html zurück
+    Rendert und gibt das Template index.jinja zurück
     """
     now = datetime.datetime.now()
     current_year = now.strftime("%Y")
@@ -144,7 +167,7 @@ def index():
     }
     template_data.update(config.get_settings())
 
-    return render_template("index.html", **template_data)
+    return render_template("index.jinja", **template_data)
 
 
 @app.route("/settings", methods=["POST"])
@@ -181,7 +204,7 @@ def get_settings():
 @app.route("/system")
 def system():
     """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/system" aufgerufen wird
-    Rendert und gibt das Template system.html zurück
+    Rendert und gibt das Template system.jinja zurück
     """
 
     system_data = {
@@ -198,7 +221,7 @@ def system():
         "os_disk_free_percent": pi.get_disk_info().get("percent"),
     }
 
-    return render_template("system.html", **system_data)
+    return render_template("system.jinja", **system_data)
 
 
 @socketio.on("connected")
@@ -211,7 +234,7 @@ def connected(json: dict):
         json (dict): Key ["data"] welcher die Uhrzeit als ISO 8601 String enthält
     """
 
-    global THREAD
+    global UPDATE_DATA_THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
 
@@ -222,10 +245,10 @@ def connected(json: dict):
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1
 
-    if not THREAD.is_alive():
+    if UPDATE_DATA_THREAD is None or not UPDATE_DATA_THREAD.is_alive():
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
-        THREAD = socketio.start_background_task(
+        UPDATE_DATA_THREAD = socketio.start_background_task(
             update_data,
             getattr(config, "UPDATE_INTERVAL"),
             getattr(config, "MESSURE_INTERVAL"),

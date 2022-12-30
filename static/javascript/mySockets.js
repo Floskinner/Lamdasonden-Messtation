@@ -49,8 +49,6 @@ socket.on('newValues', function (values) {
     const lamda2 = values.lamda2;
     const afr1 = values.afr1;
     const afr2 = values.afr2;
-    const voltage1 = values.volt1;
-    const voltage2 = values.volt2;
 
     updateValuesOnScreen(lamda1, lamda2, afr1, afr2);
 
@@ -65,6 +63,23 @@ socket.on('newValues', function (values) {
     }
 });
 
+
+socket.on("error", (error) => {
+    console.log(error);
+
+    if (error.type === "config") {
+        $("#errorModalInfoText").html("Es scheint, als ob die Konfiguration nicht korrekt ist. Bitte überprüfe die Konfiguration (settings.json) und starte die MAMA neu.");
+        $("#errorModalInfoTextDiv").show();
+    }
+    else {
+        $("#errorModalInfoTextDiv").hide();
+    }
+
+    $("#errorModalShort").html(error.exc);
+    $("#errorModalTraceback").html(error.traceback);
+
+    $('#errorModal').css('display', 'block');
+});
 
 function updateValuesOnScreen(lamda1, lamda2, afr1, afr2) {
     $('#lamda1').html(lamda1.toFixed(decimalPlaces) + " &lambda;");
