@@ -19,12 +19,15 @@ from influxdb import InfluxDBClient
 import raspi_status as pi
 from globale_variablen import config
 from lambda_sensor import LambdaSensor
+from typ_k_tempreatursensor import TypKTemperaturSensor
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
-GPIO = LambdaSensor()
+LAMDA_SENSORS = LambdaSensor()
+TEMP_SENSOR0 = TypKTemperaturSensor(3)
+TEMP_SENSOR1 = TypKTemperaturSensor(4)
 UPDATE_DATA_THREAD = None
 THREAD_STOP_EVENT = Event()
 
@@ -69,7 +72,7 @@ def update_data(update_interval: float, messure_interval: float):
 
             lamda_values = []
             for _ in range(number_of_lamda_values):
-                data = GPIO.getData()
+                data = LAMDA_SENSORS.getData()
                 lamda_values.append(data)
                 time.sleep(sampling_rate)
 
@@ -88,6 +91,8 @@ def update_data(update_interval: float, messure_interval: float):
                 sum_of_afr1 += lamda_value["afr1"]
                 sum_of_afr2 += lamda_value["afr2"]
 
+            temp_values = get_temp_values()
+
             data = {
                 "lamda1": sum_of_lamda1 / number_of_lamda_values,
                 "lamda2": sum_of_lamda2 / number_of_lamda_values,
@@ -95,6 +100,8 @@ def update_data(update_interval: float, messure_interval: float):
                 "volt2": sum_of_volt2 / number_of_lamda_values,
                 "afr1": sum_of_afr1 / number_of_lamda_values,
                 "afr2": sum_of_afr2 / number_of_lamda_values,
+                "temp0": temp_values["temp0"],
+                "temp1": temp_values["temp1"],
             }
 
             socketio.emit("newValues", data, broadcast=True)
@@ -126,6 +133,18 @@ def update_data(update_interval: float, messure_interval: float):
             },
             broadcast=True,
         )
+
+
+def get_temp_values() -> dict:
+    """Gibt die Temperaturwerte der beiden Temperatursensoren zurück
+
+    Returns: Dict mit den Keys "temp0" und "temp1"
+    """
+    temp_values = {
+        "temp0": TEMP_SENSOR0.get_temp(),
+        "temp1": TEMP_SENSOR1.get_temp(),
+    }
+    return temp_values
 
 
 def write_to_db(data: dict):

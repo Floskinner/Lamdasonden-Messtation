@@ -1,7 +1,7 @@
 from GPIO import GPIO
 
 
-class TypKTempreatursensor(GPIO):
+class TypKTemperaturSensor(GPIO):
     """Klasse womit der Temperaturwert am GPIO Einglang ausgelesen werden kann.
     Als Sensor wird ein Typ K Temperatursensor verwendet.
     Referenz: https://www.sensorshop24.de/kabelthermoelement-mit-nicr-ni-typ-k-durchmesser-6mm
