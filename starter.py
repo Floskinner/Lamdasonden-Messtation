@@ -18,7 +18,7 @@ from influxdb import InfluxDBClient
 
 import raspi_status as pi
 from globale_variablen import config
-from LambdaSensor import LambdaSensor
+from lambda_sensor import LambdaSensor
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
