@@ -7,30 +7,44 @@ class LambdaSensor(GPIO):
     Klasse womit der Aktuelle Lamdawert am GPIO Einglang ausgelesen werden kann
     """
 
-    def get_lamda(self, voltage: float, correction: float) -> float:
+    def __init__(self, channel: int):
+        """Klasse womit der Aktuelle Lamdawert am GPIO Einglang ausgelesen werden kann
+
+        :param channel: ADC Pin an dem der Lambda Sensor angeschlossen ist
+        """
+        super().__init__()
+        self.channel = channel
+
+    def calculate_lamda(self, voltage: float, correction: float) -> float:
+        """Gibt den aktuellen Lamdawert zurück
+
+        :param voltage: Spannungswert des Lambda Sensors (0-5V)
+        :param correction: Korrekturfaktor für den Lamdawert
+        :return: Aktueller Lamdawert
+        """
         lamda = round(0.2 * voltage + correction, 3)
         return lamda
 
     def get_afr(self, lamda: float) -> float:
+        """Gibt den aktuellen AFR Wert zurück
+
+        :param lamda: Aktueller Lamdawert
+        :return: Aktueller AFR Wert
+        """
         afr = lamda * getattr(config, "AFR_STOCH")
         return afr
 
-    def getData(self):
-        voltage_1 = self.get_voltage(0)
-        voltage_2 = self.get_voltage(1)
+    def get_data(self) -> dict:
+        """Gibt den aktuellen Lamdawert, den aktuellen AFR Wert und den aktuellen Spannungswert zurück
 
-        lamda_1 = round(self.get_lamda(voltage_1, getattr(config, "KORREKTURFAKTOR_BANK_1")), 3)
-        lamda_2 = round(self.get_lamda(voltage_2, getattr(config, "KORREKTURFAKTOR_BANK_2")), 3)
-
-        afr_1 = self.get_afr(lamda_1)
-        afr_2 = self.get_afr(lamda_2)
-
+        :return: Aktueller Lamdawert, Aktueller AFR Wert und Aktueller Spannungswert
+        """
+        voltage = self.get_voltage(self.channel)
+        lamda = self.calculate_lamda(voltage, getattr(config, "KORREKTURFAKTOR_BANK_1"))
+        afr = self.get_afr(lamda)
         data = {
-            "lamda1": lamda_1,
-            "lamda2": lamda_2,
-            "afr1": afr_1,
-            "afr2": afr_2,
-            "volt1": voltage_1,
-            "volt2": voltage_2,
+            "lamda": lamda,
+            "afr": afr,
+            "volt": voltage,
         }
         return data

@@ -8,6 +8,10 @@ class TypKTemperaturSensor(GPIO):
     """
 
     def __init__(self, channel: int):
+        """Klasse womit der Temperaturwert am ADC Einglang ausgelesen werden kann.
+
+        :param channel: ADC Pin an dem der Temperatursensor angeschlossen ist
+        """
         super().__init__()
         self.channel = channel
 
