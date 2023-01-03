@@ -18,13 +18,13 @@ from influxdb import InfluxDBClient
 
 import raspi_status as pi
 from globale_variablen import config
-from GPIO import GPIO_Reader
+from LambdaSensor import LambdaSensor
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
-GPIO = GPIO_Reader()
+GPIO = LambdaSensor()
 UPDATE_DATA_THREAD = None
 THREAD_STOP_EVENT = Event()
 
