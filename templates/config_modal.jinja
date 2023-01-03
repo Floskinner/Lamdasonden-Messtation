@@ -59,3 +59,93 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+
+    function openMenue() {
+        update_setting_text();
+        menueModal.css("display", "block");
+    }
+
+    function save_settings() {
+        // Neue Werte auslesen
+        const blink = $("#blink").prop("checked");
+        const bank1 = $("#bank1-show").prop("checked");
+        const bank2 = $("#bank2-show").prop("checked");
+        const nachkommastellen = parseInt($("input[name='nachkommastellen']:checked").val());
+
+        // Daten für das Backend zum speichern
+        data = {
+            "WARNUNG_BLINKEN": blink,
+            "ANZEIGEN_BANK_1": bank1,
+            "ANZEIGEN_BANK_2": bank2,
+            "NACHKOMMASTELLEN": nachkommastellen
+        }
+
+        // Korrekturfaktoren nur auslesen wenn Neukalibrierung
+        if ($("#do_neukalibrierung").prop("checked")) {
+            const correction_bank_1 = $("#correction_bank_1").val().replace(",", ".");
+            const correction_bank_2 = $("#correction_bank_2").val().replace(",", ".");
+            data["KORREKTURFAKTOR_BANK_1"] = correction_bank_1;
+            data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
+        }
+
+        // Daten zum Backend senden und speichern
+        $.ajax({
+            type: "POST",
+            url: "/settings",
+            data: data,
+            statusCode: {
+                400: () => {
+                    alert("Settings not Saved! Please check!");
+                },
+                200: () => {
+                    alert("Settings Saved!");
+
+                    // Daten auf der Seite anpassen #TODO: Abhängikeiten beachten
+                    blinking = blink;
+                    show_banks(bank1, bank2);
+                    decimalPlaces = $("input[name='nachkommastellen']:checked").val();
+                }
+            },
+            dataType: "json"
+        });
+
+        // Menue Modal schließen
+        document.getElementById('menueModal').style.display = 'none'
+    }
+
+    function update_setting_text() {
+        $.ajax({
+            type: "GET",
+            url: "/settings",
+            success: (data, textStatus, jqXHR) => {
+                $("#correction_bank_1").val(data["CORRECTION_BANK_1"]);
+                $("#correction_bank_2").val(data["CORRECTION_BANK_2"]);
+                $("#blink").prop("checked", data["WARNUNG_BLINKEN"]);
+                $("#bank1-show").prop("checked", data["ANZEIGEN_BANK_1"]);
+                $("#bank2-show").prop("checked", data["ANZEIGEN_BANK_2"]);
+                $("input[name='nachkommastellen'][value='" + data["NACHKOMMASTELLEN"] + "']").prop("checked", true);
+            },
+            dataType: "json"
+        });
+    }
+
+    /**
+     * Korrekturfaktoren nur bei Neukalibrierung änderbar
+     * Zeig auserdem eine Warnung an
+     */
+    function toggle_correction() { 
+
+        if ($('#warning').is(':visible')) {
+            $('#correction_bank_1').prop('disabled', true);
+            $('#correction_bank_2').prop('disabled', true);
+        } else {
+            alert("ACHTUNG!\nEingabe darf nur bei einer Neukalibrierung verändert werden!");
+            $('#correction_bank_1').prop('disabled', false);
+            $('#correction_bank_2').prop('disabled', false);
+        }
+
+        $('#warning').toggle();
+    }
+</script>

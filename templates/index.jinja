@@ -1,72 +1,32 @@
-<!DOCTYPE html>
-<html lang="de">
+{% extends "base.jinja" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Lamdawerte{% endblock title %}
 
-    <title>Maybach - Lamdawerte</title>
+{% block pageNavbar %}
+<div class="w3-bar-item">
+    Aufnahme:
+    <label class="switch">
+        <input id="recording" type="checkbox">
+        <span class="slider round"></span>
+    </label>
+</div>
 
-    <link rel="icon" href="../static/images/maybach_logo_icon_145803.ico">
+{{ super() }}
+{% endblock pageNavbar %}
 
-    <link rel="stylesheet" href="../static/css/w3.css">
-    <link rel="stylesheet" href="../static/css/font-awesome-4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../static/css/my.css">
-
-</head>
-
-<body class="mybackround">
-
-    <!-- Header -->
-    <header class="w3-bar">
-        <div class="w3-bar-item">
-            Aufnahme:
-            <label class="switch">
-                <input id="recording" type="checkbox">
-                <span class="slider round"></span>
-            </label>
-        </div>
-
-        <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears" style="font-size:24px"
-            onclick="openMenue()"></i>
-    </header>
-
-    <!-- Mittlerer Bereich -->
-    <div class="w3-cell-row w3-display-container" style="height: 90%;">
-        <!-- Linke Seite / Bank 1 -->
-        <div id="bank1" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p id="bank1Label" class="bank">Bank 1 &#128993;</p>
-            <p id="lamda1" class="lamda">9,999 &lambda;</p>
-            <p id="afr1" class="afr">9,999 AFR</p>
-        </div>
-
-        <!-- Rechte Seite / Bank 2 -->
-        <div id="bank2" class="w3-cell w3-container w3-cell-middle w3-center w3-mobile">
-            <p id="bank2Label" class="bank">Bank 2 &#128308;</p>
-            <p id="lamda2" class="lamda">9,999 &lambda;</p>
-            <p id="afr2" class="afr">9,999 AFR</p>
-        </div>
-        <img src="../static/images/Legende.png" alt="Legende" class="w3-display-bottomright" height="25%"
-            style="padding-bottom: 20px; padding-right: 20px;">
-    </div>
-
-    <!-- Unterer Bereich -->
-    <div class="w3-row w3-center w3-border-top" style="height: 3%; ">
-        &copy; 2021 - {{ current_year }} by Florian Glaser
-    </div>
+{% block main %}
+{% include "baenke.jinja" %}
+{% include "temperaturen.jinja" %}
+{% endblock %}
 
 
-    <!-- Config Modal -->
-    {% include "config_modal.jinja" %}
-    <!-- Error Modal -->
-    {% include "error_modal.jinja" %}
-
-</body>
-
-<script src="../static/javascript/jquery-3.5.1.min.js"></script>
+{% block javaScript %}
+{{ super() }}
 <script src="../static/javascript/socket.io.min.js"></script>
 <script src="../static/javascript/mySockets.js"></script>
+{% endblock javaScript %}
 
+{% block pageJavaScript %}
 <script type="text/javascript" charset="utf-8">
 
     const UPDATE_INTERVALL = {{ update_intervall }};
@@ -77,8 +37,8 @@
 
         // Anwenden der Konfiguration
         show_banks({{ ANZEIGEN_BANK_1 | default("true") | lower}}, {{ ANZEIGEN_BANK_2 | default("true") | lower}});
-        blinking = {{ WARNUNG_BLINKEN | default("false") | lower }};
-        decimalPlaces = {{ NACHKOMMASTELLEN | default("2") }};
+        blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
+        decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
     });
 
 
@@ -99,76 +59,6 @@
                 "recording": false
             });
         }
-    }
-
-    function openMenue() {
-        update_setting_text();
-        menueModal.css("display", "block");
-    }
-
-    function save_settings() {
-
-        // Neue Werte auslesen
-        const blink = $("#blink").prop("checked");
-        const bank1 = $("#bank1-show").prop("checked");
-        const bank2 = $("#bank2-show").prop("checked");
-        const nachkommastellen = parseInt($("input[name='nachkommastellen']:checked").val());
-
-        // Daten für das Backend zum speichern
-        data = {
-            "WARNUNG_BLINKEN": blink,
-            "ANZEIGEN_BANK_1": bank1,
-            "ANZEIGEN_BANK_2": bank2,
-            "NACHKOMMASTELLEN": nachkommastellen
-        }
-
-        // Korrekturfaktoren nur auslesen wenn Neukalibrierung
-        if ($("#do_neukalibrierung").prop("checked")) {
-            const correction_bank_1 = $("#correction_bank_1").val().replace(",", ".");
-            const correction_bank_2 = $("#correction_bank_2").val().replace(",", ".");
-            data["KORREKTURFAKTOR_BANK_1"] = correction_bank_1;
-            data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
-        }
-
-        // Daten zum Backend senden und speichern
-        $.ajax({
-            type: "POST",
-            url: "/settings",
-            data: data,
-            statusCode: {
-                400: () => {
-                    alert("Settings not Saved! Please check!");
-                },
-                200: () => {
-                    alert("Settings Saved!");
-
-                    // Daten auf der Seite anpassen
-                    blinking = blink;
-                    show_banks(bank1, bank2);
-                    decimalPlaces = $("input[name='nachkommastellen']:checked").val();
-                }
-            },
-            dataType: "json"
-        });
-
-        // Menue Modal schließen
-        document.getElementById('menueModal').style.display = 'none'
-    }
-
-    function update_setting_text() {
-        $.ajax({
-            type: "GET",
-            url: "/settings",
-            success: (data, textStatus, jqXHR) => {
-                $("#correction_bank_1").val(data["CORRECTION_BANK_1"]);
-                $("#correction_bank_2").val(data["CORRECTION_BANK_2"]);
-                $("#blink").prop("checked", data["WARNUNG_BLINKEN"]);
-                $("#bank1-show").prop("checked", data["ANZEIGEN_BANK_1"]);
-                $("#bank2-show").prop("checked", data["ANZEIGEN_BANK_2"]);
-                $("input[name='nachkommastellen'][value='" + data["NACHKOMMASTELLEN"] + "']").prop("checked", true);
-            },
-            dataType: "json"
-        });
     }
 
     function show_banks(bank1, bank2) {
@@ -192,20 +82,5 @@
         }
     }
 
-    function toggle_correction() {
-
-        if ($('#warning').is(':visible')) {
-            $('#correction_bank_1').prop('disabled', true);
-            $('#correction_bank_2').prop('disabled', true);
-        } else {
-            alert("ACHTUNG!\nEingabe darf nur bei einer Neukalibrierung verändert werden!");
-            $('#correction_bank_1').prop('disabled', false);
-            $('#correction_bank_2').prop('disabled', false);
-        }
-
-        $('#warning').toggle();
-    }
-
 </script>
-
-</html>
+{% endblock pageJavaScript %}
