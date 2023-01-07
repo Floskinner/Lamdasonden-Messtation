@@ -81,8 +81,8 @@ def update_data(update_interval: float, messure_interval: float):
                 "volt2": lamda_values["volt2"],
                 "afr1": lamda_values["afr1"],
                 "afr2": lamda_values["afr2"],
-                "temp0": temp_values["temp0"],
-                "temp1": temp_values["temp1"],
+                "temp1": temp_values["temp0"],
+                "temp2": temp_values["temp1"],
             }
 
             socketio.emit("newValues", data, broadcast=True)

@@ -49,8 +49,10 @@ socket.on('newValues', function (values) {
     const lamda2 = values.lamda2;
     const afr1 = values.afr1;
     const afr2 = values.afr2;
+    const temp1 = values.temp1;
+    const temp2 = values.temp2;
 
-    updateValuesOnScreen(lamda1, lamda2, afr1, afr2);
+    updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2);
 
     applyWarningColors($("#lamda1"), lamda1);
     applyWarningColors($("#lamda2"), lamda2);
@@ -81,11 +83,14 @@ socket.on("error", (error) => {
     $('#errorModal').css('display', 'block');
 });
 
-function updateValuesOnScreen(lamda1, lamda2, afr1, afr2) {
+function updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2) {
     $('#lamda1').html(lamda1.toFixed(decimalPlaces) + " &lambda;");
     $('#lamda2').html(lamda2.toFixed(decimalPlaces) + " &lambda;");
     $('#afr1').html(afr1.toFixed(2) + " AFR");
     $('#afr2').html(afr2.toFixed(2) + " AFR");
+
+    $('#temp1').html(temp1 + " &#8451");
+    $('#temp2').html(temp2 + " &#8451");
 }
 
 function applyWarningColors(htmlElement, lamdaValue) {
