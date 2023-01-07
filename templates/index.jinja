@@ -36,7 +36,12 @@
         $("#recording").click(toogleRecording);
 
         // Anwenden der Konfiguration
-        show_banks({{ ANZEIGEN_BANK_1 | default("true") | lower}}, {{ ANZEIGEN_BANK_2 | default("true") | lower}});
+        show_values(
+            {{ ANZEIGEN_BANK_1 | default("true") | lower}},
+            {{ ANZEIGEN_BANK_2 | default("true") | lower}},
+            {{ ANZEIGEN_TEMP_1 | default("true") | lower}},
+            {{ ANZEIGEN_TEMP_2 | default("true") | lower}}
+        );
         blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
         decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
     });
@@ -61,7 +66,45 @@
         }
     }
 
+    function show_values(bank1, bank2, temp1, temp2) {
+        show_banks(bank1, bank2);
+        show_temp(temp1, temp2);
+
+        // Sklaierung der Anzeigen anpassen, wenn ein Wert nicht angezeigt wird
+        if (bank1 || bank2){
+            $("#tempContainer").height("50%");
+        }
+        else {
+            $("#tempContainer").height("100%");
+        }
+
+        if (temp1 || temp2){
+            $("#bankContainer").height("50%");
+        }
+        else {
+            $("#bankContainer").height("100%");
+        }
+
+        // Hintergrundbild anpassen
+        // Wenn nur eine Bank oder eine Temperatur angezeigt wird, dann Hintergrundbild nicht anzeigen
+        if ($("#tempContainer").is(":hidden") && (bank1 ^ bank2) || $("#bankContainer").is(":hidden") && (temp1 ^ temp2)) {
+            $('.mybackround').addClass('hidden');
+        }
+        else {
+            $('.mybackround').removeClass('hidden');
+        }
+    }
+
     function show_banks(bank1, bank2) {
+
+        if(!bank1 && !bank2){
+            $("#bankContainer").hide();
+            return;
+        }
+        else {
+            $("#bankContainer").show();
+        }
+
         if (bank1) {
             $("#bank1").show();
         } else {
@@ -73,12 +116,28 @@
         } else {
             $("#bank2").hide();
         }
+    }
 
-        if (bank1 ^ bank2) {
-            $('.mybackround').addClass('hidden');
+    function show_temp(temp1, temp2) {
+
+        if (!temp1 && !temp2) {
+            $("#tempContainer").hide();
+            return;
         }
         else {
-            $('.mybackround').removeClass('hidden');
+            $("#tempContainer").show();
+        }
+
+        if (temp1) {
+            $("#temp1Container").show();
+        } else {
+            $("#temp1Container").hide();
+        }
+
+        if (temp2) {
+            $("#temp2Container").show();
+        } else {
+            $("#temp2Container").hide();
         }
     }
 

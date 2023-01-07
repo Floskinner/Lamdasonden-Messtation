@@ -1,13 +1,13 @@
 <div id="menueModal" class="w3-modal">
-    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="background-color: rgb(156, 151, 151);">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom">
 
-        <div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
+        <div class="w3-center w3-border-bottom modalHeaderFooter"><br>
             <span onclick="document.getElementById('menueModal').style.display='none'"
                 class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
             <h3>Einstellungen</h3>
         </div>
 
-        <form class="w3-container w3-padding-16">
+        <form class="w3-container w3-padding-16 modalBody">
             <h4>Anzuzeigende Banken:</h4>
             <input id="bank1-show" class="w3-check" type="checkbox" {% if ANZEIGEN_BANK_1 %} checked="checked" {% endif
                 %}>
@@ -34,6 +34,15 @@
 
             <hr>
 
+            <h4>Anzuzeigende Temperaturen:</h4>
+            <input id="temp1-show" class="w3-check" type="checkbox" {% if ANZEIGEN_TEMP_1 %} checked="checked" {% endif %}>
+            <label>Temp 1 &#128993</label><br>
+
+            <input id="temp2-show" class="w3-check" type="checkbox" {% if ANZEIGEN_TEMP_2 %} checked="checked" {% endif %}>
+            <label>Temp 2 &#128308</label><br>
+
+            <hr>
+
             <h4>Korrekturfaktor für Lamdaberechnung:</h4>
             <label>Neukalibrierung? </label><input id="do_neukalibrierung" class="w3-check" type="checkbox"
                 onchange=toggle_correction()><br>
@@ -49,7 +58,7 @@
                 value="{{ KORREKTURFAKTOR_BANK_2 }}" placeholder="0.511" disabled>
         </form>
 
-        <div class="w3-container w3-padding-16">
+        <div class="w3-container w3-padding-16 w3-border-top modalHeaderFooter">
             <button id="btnHistory" class="w3-button w3-round-large w3-border w3-hide-small"
                 onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
             <button class="w3-button w3-round-large w3-border"
@@ -74,12 +83,17 @@
         const bank2 = $("#bank2-show").prop("checked");
         const nachkommastellen = parseInt($("input[name='nachkommastellen']:checked").val());
 
+        const temp1 = $("#temp1-show").prop("checked");
+        const temp2 = $("#temp2-show").prop("checked");
+
         // Daten für das Backend zum speichern
         data = {
             "WARNUNG_BLINKEN": blink,
             "ANZEIGEN_BANK_1": bank1,
             "ANZEIGEN_BANK_2": bank2,
-            "NACHKOMMASTELLEN": nachkommastellen
+            "NACHKOMMASTELLEN": nachkommastellen,
+            "ANZEIGEN_TEMP_1": temp1,
+            "ANZEIGEN_TEMP_2": temp2
         }
 
         // Korrekturfaktoren nur auslesen wenn Neukalibrierung
@@ -104,7 +118,7 @@
 
                     // Daten auf der Seite anpassen #TODO: Abhängikeiten beachten
                     blinking = blink;
-                    show_banks(bank1, bank2);
+                    show_values(bank1, bank2, temp1, temp2);
                     decimalPlaces = $("input[name='nachkommastellen']:checked").val();
                 }
             },
@@ -126,6 +140,8 @@
                 $("#bank1-show").prop("checked", data["ANZEIGEN_BANK_1"]);
                 $("#bank2-show").prop("checked", data["ANZEIGEN_BANK_2"]);
                 $("input[name='nachkommastellen'][value='" + data["NACHKOMMASTELLEN"] + "']").prop("checked", true);
+                $("#temp1-show").prop("checked", data["ANZEIGEN_TEMP_1"]);
+                $("#temp2-show").prop("checked", data["ANZEIGEN_TEMP_2"]);
             },
             dataType: "json"
         });
