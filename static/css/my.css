@@ -25,10 +25,22 @@ input {
 
 .lamda {
     font-size: 8vh;
-}
-
-.afr {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .afr {
     font-size: 3.5vh;
+  }
+  
+  .tempLabel {
+    font-size: 2vh;
+  }
+  
+  .temp{
+    font-size: 8vh;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media only screen and (min-width: 768px) {
