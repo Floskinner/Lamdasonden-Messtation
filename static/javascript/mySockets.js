@@ -4,11 +4,14 @@ const RED = "rgb(179, 0, 0)";
 const ORANGE = "rgb(227, 111, 39)";
 const BLACK = "rgb(0, 0, 0)";
 
-const MAX_ABOVE_ORANGE = 1.12;
-const MAX_ABOVE_RED = 1.20;
+const MAX_LAMBDA_ABOVE_ORANGE = 1.12;
+const MAX_LAMBDA_ABOVE_RED = 1.20;
 
-const MAX_BELOW_ORANGE = 0.86;
-const MAX_BELOW_RED = 0.80;
+const MAX_LAMBDA_BELOW_ORANGE = 0.86;
+const MAX_LAMBDA_BELOW_RED = 0.80;
+
+const MAX_TEMP_ABOVE_ORANGE = 600;
+const MAX_TEMP_ABOVE_RED = 850;
 
 let blinking = undefined;
 let decimalPlaces = undefined;
@@ -54,13 +57,16 @@ socket.on('newValues', function (values) {
 
     updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2);
 
-    applyWarningColors($("#lamda1"), lamda1);
-    applyWarningColors($("#lamda2"), lamda2);
+    applyWarningColorsLambda($("#lamda1"), lamda1);
+    applyWarningColorsLambda($("#lamda2"), lamda2);
 
-    if ((lamda1 >= MAX_ABOVE_RED || lamda1 <= MAX_BELOW_RED) && blinking) {
+    applyWarningColorsTemp($("#temp1"), temp1);
+    applyWarningColorsTemp($("#temp2"), temp2);
+
+    if ((lamda1 >= MAX_LAMBDA_ABOVE_RED || lamda1 <= MAX_LAMBDA_BELOW_RED) && blinking) {
         applyRedBlinking($("#lamda1"));
     }
-    if ((lamda2 >= MAX_ABOVE_RED || lamda2 <= MAX_BELOW_RED) && blinking) {
+    if ((lamda2 >= MAX_LAMBDA_ABOVE_RED || lamda2 <= MAX_LAMBDA_BELOW_RED) && blinking) {
         applyRedBlinking($("#lamda2"));
     }
 });
@@ -93,10 +99,22 @@ function updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2) {
     $('#temp2').html(temp2 + " &#8451");
 }
 
-function applyWarningColors(htmlElement, lamdaValue) {
+function applyWarningColorsLambda(htmlElement, lambdaValue) {
     // Sind die Werte von Lamda entsprechend, wird der Text erst Orange und dann Rot
-    if (lamdaValue >= MAX_ABOVE_ORANGE || lamdaValue <= MAX_BELOW_ORANGE) {
-        if (lamdaValue >= MAX_ABOVE_RED || lamdaValue <= MAX_BELOW_RED) {
+    if (lambdaValue >= MAX_LAMBDA_ABOVE_ORANGE || lambdaValue <= MAX_LAMBDA_BELOW_ORANGE) {
+        if (lambdaValue >= MAX_LAMBDA_ABOVE_RED || lambdaValue <= MAX_LAMBDA_BELOW_RED) {
+            htmlElement.css("color", RED);
+        } else {
+            htmlElement.css("color", ORANGE);
+        }
+    } else {
+        htmlElement.css("color", BLACK);
+    }
+}
+
+function applyWarningColorsTemp(htmlElement, tempValue) {
+    if (tempValue >= MAX_TEMP_ABOVE_ORANGE) {
+        if (tempValue >= MAX_TEMP_ABOVE_RED) {
             htmlElement.css("color", RED);
         } else {
             htmlElement.css("color", ORANGE);
