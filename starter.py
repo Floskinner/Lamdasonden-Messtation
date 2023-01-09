@@ -18,13 +18,17 @@ from influxdb import InfluxDBClient
 
 import raspi_status as pi
 from globale_variablen import config
-from GPIO import GPIO_Reader
+from lambda_sensor import LambdaSensor
+from typ_k_tempreatursensor import TypKTemperaturSensor
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
-GPIO = GPIO_Reader()
+LAMDA_SENSOR0 = LambdaSensor(getattr(config, "LAMDA0_CHANNEL"))
+LAMDA_SENSOR1 = LambdaSensor(getattr(config, "LAMDA1_CHANNEL"))
+TEMP_SENSOR0 = TypKTemperaturSensor(getattr(config, "TEMPERATUR0_CHANNEL"))
+TEMP_SENSOR1 = TypKTemperaturSensor(getattr(config, "TEMPERATUR1_CHANNEL"))
 UPDATE_DATA_THREAD = None
 THREAD_STOP_EVENT = Event()
 
@@ -67,34 +71,18 @@ def update_data(update_interval: float, messure_interval: float):
 
         while not THREAD_STOP_EVENT.isSet():
 
-            lamda_values = []
-            for _ in range(number_of_lamda_values):
-                data = GPIO.getData()
-                lamda_values.append(data)
-                time.sleep(sampling_rate)
-
-            sum_of_lamda1 = 0
-            sum_of_lamda2 = 0
-            sum_of_volt1 = 0
-            sum_of_volt2 = 0
-            sum_of_afr1 = 0
-            sum_of_afr2 = 0
-
-            for lamda_value in lamda_values:
-                sum_of_lamda1 += lamda_value["lamda1"]
-                sum_of_lamda2 += lamda_value["lamda2"]
-                sum_of_volt1 += lamda_value["volt1"]
-                sum_of_volt2 += lamda_value["volt2"]
-                sum_of_afr1 += lamda_value["afr1"]
-                sum_of_afr2 += lamda_value["afr2"]
+            lamda_values = get_lamda_values(number_of_lamda_values, sampling_rate)
+            temp_values = get_temp_values()
 
             data = {
-                "lamda1": sum_of_lamda1 / number_of_lamda_values,
-                "lamda2": sum_of_lamda2 / number_of_lamda_values,
-                "volt1": sum_of_volt1 / number_of_lamda_values,
-                "volt2": sum_of_volt2 / number_of_lamda_values,
-                "afr1": sum_of_afr1 / number_of_lamda_values,
-                "afr2": sum_of_afr2 / number_of_lamda_values,
+                "lamda1": lamda_values["lamda1"],
+                "lamda2": lamda_values["lamda2"],
+                "volt1": lamda_values["volt1"],
+                "volt2": lamda_values["volt2"],
+                "afr1": lamda_values["afr1"],
+                "afr2": lamda_values["afr2"],
+                "temp1": temp_values["temp0"],
+                "temp2": temp_values["temp1"],
             }
 
             socketio.emit("newValues", data, broadcast=True)
@@ -126,6 +114,69 @@ def update_data(update_interval: float, messure_interval: float):
             },
             broadcast=True,
         )
+
+
+def get_lamda_values(number_of_lamda_values: int, sampling_rate: float) -> dict:
+    """Gibt die Lamdawerte der beiden Lambdasensoren zurück
+
+    Args:
+        number_of_lamda_values (int): Anzahl der Messungen die durchgeführt werden sollen
+        sampling_rate (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
+
+    Returns:
+        dict: Lamdawerte der beiden Lambdasensoren
+    """
+    lamda_values = []
+    for _ in range(number_of_lamda_values):
+        lamda0_data = LAMDA_SENSOR0.get_data()
+        lamda1_data = LAMDA_SENSOR1.get_data()
+        lamda_values.append(
+            {
+                "lamda1": lamda0_data["lamda"],
+                "lamda2": lamda1_data["lamda"],
+                "volt1": lamda0_data["volt"],
+                "volt2": lamda1_data["volt"],
+                "afr1": lamda0_data["afr"],
+                "afr2": lamda1_data["afr"],
+            }
+        )
+        time.sleep(sampling_rate)
+
+    sum_of_lamda1 = 0
+    sum_of_lamda2 = 0
+    sum_of_volt1 = 0
+    sum_of_volt2 = 0
+    sum_of_afr1 = 0
+    sum_of_afr2 = 0
+
+    for lamda_value in lamda_values:
+        sum_of_lamda1 += lamda_value["lamda1"]
+        sum_of_lamda2 += lamda_value["lamda2"]
+        sum_of_volt1 += lamda_value["volt1"]
+        sum_of_volt2 += lamda_value["volt2"]
+        sum_of_afr1 += lamda_value["afr1"]
+        sum_of_afr2 += lamda_value["afr2"]
+
+    return {
+        "lamda1": sum_of_lamda1 / number_of_lamda_values,
+        "lamda2": sum_of_lamda2 / number_of_lamda_values,
+        "volt1": sum_of_volt1 / number_of_lamda_values,
+        "volt2": sum_of_volt2 / number_of_lamda_values,
+        "afr1": sum_of_afr1 / number_of_lamda_values,
+        "afr2": sum_of_afr2 / number_of_lamda_values,
+    }
+
+
+def get_temp_values() -> dict:
+    """Gibt die Temperaturwerte der beiden Temperatursensoren zurück
+
+    Returns: Dict mit den Keys "temp0" und "temp1"
+    """
+    temp_values = {
+        "temp0": TEMP_SENSOR0.get_temp(),
+        "temp1": TEMP_SENSOR1.get_temp(),
+    }
+    return temp_values
 
 
 def write_to_db(data: dict):
