@@ -5,10 +5,25 @@
             <span onclick="document.getElementById('historyModal').style.display='none'"
                 class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close">&times;</span>
             <h2><b>Verlauf</b></h2>
+            <div class="w3-container" style="margin-bottom: 15px;">
+                <label>Temperatur</label>
+                <input class="w3-radio" type="radio" name="history" value="temperatur" checked>
+                <label>Lambda</label>
+                <input class="w3-radio" type="radio" name="history" value="lambda">
+            </div>
         </div>
 
         <div class="w3-container">
             <canvas id="historyCanvas"></canvas>
+        </div>
+
+        <div class="w3-container>" style="margin-bottom: 15px;">
+            <label>Startzeit</label>
+            <input type="datetime-local" name="start_time">
+            <label>Endzeit</label>
+            <input type="datetime-local" name="end_time">
+            <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
+                onclick="set_history()">Anzeigen</button>
         </div>
 
         <div class="w3-container w3-padding-16">
@@ -19,29 +34,106 @@
 </div>
 
 <script src="../static/javascript/chart/chart.umd.js"></script>
+<script src="../static/javascript/chart/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="../static/javascript/chart/hammerjs@2.0.8"></script>
+<script src="../static/javascript/chart/chartjs-plugin-zoom.min.js"></script>
+
 <script type="text/javascript" charset="utf-8">
+    let historyChart = new Chart(document.getElementById('historyCanvas'));
 
-    const data = [
-        { year: 2010, count: 10 },
-        { year: 2011, count: 20 },
-        { year: 2012, count: 15 },
-        { year: 2013, count: 25 },
-        { year: 2014, count: 22 },
-        { year: 2015, count: 30 },
-        { year: 2016, count: 28 },
-    ];
+    function set_history() {
+        const start_time = document.getElementsByName('start_time')[0].value;
+        const end_time = document.getElementsByName('end_time')[0].value;
+        const history = $("input[name='history']:checked").val();
 
+        if (history == 'temperatur') {
+            set_temp_history(start_time, end_time);
+        } else if (history == 'lambda') {
+            set_lambda_history(start_time, end_time);
+        }
+    }
 
-    let historyChart = new Chart(document.getElementById('historyCanvas'), {
-        type: 'line',
-        data: {
-            labels: data.map(row => row.year),
-            datasets: [
-                {
-                    label: 'Acquisitions by year',
-                    data: data.map(row => row.count)
-                }
-            ]
-        },
-    });
+    function set_temp_history(start_time, end_time) {
+
+        $.ajax({
+            url: '/tempdata',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                'start_time': start_time,
+                'end_time': end_time,
+            },
+            success: function (data) {
+                console.log(data);
+
+                let timestamps = [];
+                let temperatures = [];
+
+                data.forEach((item, index) => {
+                    timestamps.push(convert_iso_to_timestamp(item[0]));
+                    temperatures.push(item[1]);
+                });
+
+                historyChart.destroy();
+                historyChart = new Chart(document.getElementById('historyCanvas'), {
+                    data: {
+                        labels: timestamps,
+                        datasets: [{
+                            label: 'Temperatur',
+                            data: temperatures,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                        }],
+                    },
+                    type: "line",
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: "top",
+                            },
+                            title: {
+                                display: false,
+                            },
+                            zoom: {
+                                zoom: {
+                                    wheel: {
+                                        enabled: true,
+                                    },
+                                    pinch: {
+                                        enabled: true
+                                    },
+                                    mode: 'x',
+                                },
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: "time",
+                                time: {
+                                    unit: "minute",
+                                    displayFormats: {
+                                        minute: "HH:mm:ss",
+                                    },
+                                },
+                            },
+                            y: {
+                                type: "linear",
+                            },
+                        },
+                    },
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function convert_iso_to_timestamp(iso) {
+        const date = new Date(iso);
+        return date.getTime();
+    }
 </script>

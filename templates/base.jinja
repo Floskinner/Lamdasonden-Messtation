@@ -17,6 +17,10 @@
     {% endblock head %}
 </head>
 
+{% block javascript %}
+    <script src="../static/javascript/jquery-3.5.1.min.js"></script>
+{% endblock javascript %}
+
 <body class="mybackround">
 
     <!-- Header -->
@@ -47,11 +51,7 @@
 
 </body>
 
-{% block javaScript %}
-
-    <script src="../static/javascript/jquery-3.5.1.min.js"></script>
-    {% block pageJavaScript %} {% endblock pageJavaScript %}
-
-{% endblock javaScript %}
+{% block pageJavaScript %}
+{% endblock pageJavaScript %}
 
 </html>

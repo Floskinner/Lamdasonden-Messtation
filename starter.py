@@ -274,8 +274,8 @@ def get_temp_data_between():
     """
     data: dict = request.args
     try:
-        start_time = int(data["start_time"])
-        end_time = int(data["end_time"])
+        start_time = data["start_time"]
+        end_time = data["end_time"]
     except KeyError as error:
         print(error)
         return Response("{'message':'Invalid values'}", status=400, mimetype="application/json")
