@@ -2,6 +2,7 @@
 Modul das von Gunicorn verwendet wird um den Server zu starten
 """
 import datetime
+import json
 import os
 import sys
 import time
@@ -17,6 +18,7 @@ from flask_socketio import SocketIO
 from influxdb import InfluxDBClient
 
 import raspi_status as pi
+from database import db_connection
 from globale_variablen import config
 from lambda_sensor import LambdaSensor
 from typ_k_tempreatursensor import TypKTemperaturSensor
@@ -250,6 +252,39 @@ def get_settings():
     :return: Response mit Statuscode 200 wenn erfolgreich. JSON mit den Einstellungen als Inhalt.
     """
     return config.get_settings()
+
+
+@app.route("/tempdata", methods=["POST"])
+def add_temp_data():
+    """Fügt Temperaturdaten in die Datenbank ein
+
+    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """
+    data: dict = request.form
+    db_connection.insert_temp_value(float(data["value"]))
+
+    return Response("Success", status=200)
+
+
+@app.route("/tempdata", methods=["GET"])
+def get_temp_data_between():
+    """Gibt Temperaturdaten zwischen zwei Zeitpunkten zurück
+
+    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """
+    data: dict = request.args
+    try:
+        start_time = int(data["start_time"])
+        end_time = int(data["end_time"])
+    except KeyError as error:
+        print(error)
+        return Response("{'message':'Invalid values'}", status=400, mimetype="application/json")
+
+    return Response(
+        json.dumps(db_connection.get_temp_values_between(start_time, end_time)),
+        status=200,
+        mimetype="application/json",
+    )
 
 
 @app.route("/system")
