@@ -13,7 +13,35 @@
 
         <div class="w3-container w3-padding-16">
             <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
-                onclick="document.getElementById('errorModal').style.display='none'">Schließen</button>
+                onclick="document.getElementById('historyModal').style.display='none'">Schließen</button>
         </div>
     </div>
 </div>
+
+<script src="../static/javascript/chart/chart.umd.js"></script>
+<script type="text/javascript" charset="utf-8">
+
+    const data = [
+        { year: 2010, count: 10 },
+        { year: 2011, count: 20 },
+        { year: 2012, count: 15 },
+        { year: 2013, count: 25 },
+        { year: 2014, count: 22 },
+        { year: 2015, count: 30 },
+        { year: 2016, count: 28 },
+    ];
+
+
+    let historyChart = new Chart(document.getElementById('historyCanvas'), {
+        type: 'line',
+        data: {
+            labels: data.map(row => row.year),
+            datasets: [
+                {
+                    label: 'Acquisitions by year',
+                    data: data.map(row => row.count)
+                }
+            ]
+        },
+    });
+</script>
