@@ -1,42 +1,59 @@
-<div id="historyModal" class="w3-modal">
-    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="background-color: rgb(156, 151, 151);">
+{% extends "base.jinja" %}
 
-        <div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
-            <span onclick="document.getElementById('historyModal').style.display='none'"
-                class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close">&times;</span>
-            <h2><b>Verlauf</b></h2>
-            <div class="w3-container" style="margin-bottom: 15px;">
-                <label>Temperatur</label>
-                <input class="w3-radio" type="radio" name="history" value="temperatur" checked>
-                <label>Lambda</label>
-                <input class="w3-radio" type="radio" name="history" value="lambda">
-            </div>
-        </div>
+{% block title %}Verlauf{% endblock title %}
 
-        <div class="w3-container">
-            <canvas id="historyCanvas"></canvas>
-        </div>
+{% block pageNavbar %}
+<div class="w3-bar-item">
+    <button class="w3-button w3-round-large w3-border w3-green" onclick="history.back()">Zurück</button>
+</div>
 
-        <div class="w3-container>" style="margin-bottom: 15px;">
-            <label>Startzeit</label>
-            <input type="datetime-local" name="start_time">
-            <label>Endzeit</label>
-            <input type="datetime-local" name="end_time">
-            <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
-                onclick="set_history()">Anzeigen</button>
-        </div>
+{{ super() }}
+{% endblock pageNavbar %}
 
-        <div class="w3-container w3-padding-16">
-            <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
-                onclick="document.getElementById('historyModal').style.display='none'">Schließen</button>
-        </div>
+
+{% block main %}
+
+
+<div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
+    <h2><b>Verlauf</b></h2>
+    <div class="w3-container" style="margin-bottom: 15px;">
+        <label>Temperatur</label>
+        <input class="w3-radio" type="radio" name="history" value="temperatur" checked>
+        <label>Lambda</label>
+        <input class="w3-radio" type="radio" name="history" value="lambda">
     </div>
 </div>
 
+<div class="w3-container">
+    <canvas id="historyCanvas"></canvas>
+</div>
+
+<div class="w3-container>" style="margin-bottom: 15px;">
+    <label>Startzeit</label>
+    <input type="datetime-local" name="start_time">
+    <label>Endzeit</label>
+    <input type="datetime-local" name="end_time">
+    <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
+        onclick="set_history()">Anzeigen</button>
+</div>
+
+<div class="w3-container w3-padding-16">
+    <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
+        onclick="document.getElementById('historyModal').style.display='none'">Schließen</button>
+</div>
+
+{% endblock %}
+
+{% block javaScript %}
+{{ super() }}
 <script src="../static/javascript/chart/chart.umd.js"></script>
 <script src="../static/javascript/chart/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="../static/javascript/chart/hammerjs@2.0.8"></script>
 <script src="../static/javascript/chart/chartjs-plugin-zoom.min.js"></script>
+{% endblock javaScript %}
+
+
+{% block pageJavaScript %}
 
 <script type="text/javascript" charset="utf-8">
     let historyChart = new Chart(document.getElementById('historyCanvas'));
@@ -137,3 +154,5 @@
         return date.getTime();
     }
 </script>
+
+{% endblock pageJavaScript %}

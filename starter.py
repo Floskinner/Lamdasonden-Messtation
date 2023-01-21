@@ -223,6 +223,14 @@ def index():
     return render_template("index.jinja", **template_data)
 
 
+@app.route("/history", methods=["GET"])
+def history():
+    """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/history" aufgerufen wird
+    Rendert und gibt das Template history.jinja zurück
+    """
+    return render_template("history.jinja")
+
+
 @app.route("/settings", methods=["POST"])
 def update_settings():
     """Update der Einstellungen

@@ -11,12 +11,19 @@
     </label>
 </div>
 
+<i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears" style="font-size:24px" onclick="openMenue()"></i>
+
 {{ super() }}
 {% endblock pageNavbar %}
 
 {% block main %}
 {% include "baenke.jinja" %}
+
 {% include "temperaturen.jinja" %}
+
+<!-- Config Modal -->
+{% include "config_modal.jinja" %}
+
 {% endblock %}
 
 
@@ -38,12 +45,12 @@
         // Anwenden der Konfiguration
         show_values(
             {{ ANZEIGEN_BANK_1 | default("true") | lower}},
-            {{ ANZEIGEN_BANK_2 | default("true") | lower}},
-            {{ ANZEIGEN_TEMP_1 | default("true") | lower}},
-            {{ ANZEIGEN_TEMP_2 | default("true") | lower}}
-        );
-        blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
-        decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
+        {{ ANZEIGEN_BANK_2 | default("true") | lower}},
+        {{ ANZEIGEN_TEMP_1 | default("true") | lower}},
+        {{ ANZEIGEN_TEMP_2 | default("true") | lower}}
+    );
+    blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
+    decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
     });
 
 
@@ -71,14 +78,14 @@
         show_temp(temp1, temp2);
 
         // Sklaierung der Anzeigen anpassen, wenn ein Wert nicht angezeigt wird
-        if (bank1 || bank2){
+        if (bank1 || bank2) {
             $("#tempContainer").height("50%");
         }
         else {
             $("#tempContainer").height("100%");
         }
 
-        if (temp1 || temp2){
+        if (temp1 || temp2) {
             $("#bankContainer").height("50%");
         }
         else {
@@ -97,7 +104,7 @@
 
     function show_banks(bank1, bank2) {
 
-        if(!bank1 && !bank2){
+        if (!bank1 && !bank2) {
             $("#bankContainer").hide();
             return;
         }

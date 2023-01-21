@@ -17,17 +17,15 @@
     {% endblock head %}
 </head>
 
-{% block javascript %}
+{% block javaScript %}
     <script src="../static/javascript/jquery-3.5.1.min.js"></script>
-{% endblock javascript %}
+{% endblock javaScript %}
 
 <body class="mybackround">
 
     <!-- Header -->
     <header class="w3-bar">
         {% block pageNavbar %}
-        <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears" style="font-size:24px"
-            onclick="openMenue()"></i>
         {% endblock pageNavbar %}
     </header>
 
@@ -41,13 +39,8 @@
         &copy; 2021 - {{ current_year }} by Florian Glaser
     </div>
 
-
-    <!-- Config Modal -->
-    {% include "config_modal.jinja" %}
     <!-- Error Modal -->
     {% include "error_modal.jinja" %}
-    <!-- History Modal -->
-    {% include "history_modal.jinja" %}
 
 </body>
 
