@@ -3,9 +3,7 @@
 {% block title %}Verlauf{% endblock title %}
 
 {% block pageNavbar %}
-<div class="w3-bar-item">
-    <button class="w3-button w3-round-large w3-border w3-green" onclick="history.back()">Zurück</button>
-</div>
+<a href="/" class="w3-bar-item w3-button w3-left fa fa-arrow-left" style="font-size:24px"></a>
 
 {{ super() }}
 {% endblock pageNavbar %}
@@ -18,9 +16,9 @@
     <h2><b>Verlauf</b></h2>
     <div class="w3-container" style="margin-bottom: 15px;">
         <label>Temperatur</label>
-        <input class="w3-radio" type="radio" name="history" value="temperatur" checked>
+        <input class="w3-radio" type="radio" name="history" value="temperatur" onchange="set_history()" checked>
         <label>Lambda</label>
-        <input class="w3-radio" type="radio" name="history" value="lambda">
+        <input class="w3-radio" type="radio" name="history" value="lambda" onchange="set_history()">
     </div>
 </div>
 
@@ -29,17 +27,16 @@
 </div>
 
 <div class="w3-container>" style="margin-bottom: 15px;">
-    <label>Startzeit</label>
-    <input type="datetime-local" name="start_time">
-    <label>Endzeit</label>
-    <input type="datetime-local" name="end_time">
+
+    <label>Von</label>
+    <input id="start_date" type="date">
+    <input id="start_time" type="time">
+    <label>Bis</label>
+    <input id="end_date" type="date">
+    <input id="end_time" type="time">
+
     <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
         onclick="set_history()">Anzeigen</button>
-</div>
-
-<div class="w3-container w3-padding-16">
-    <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
-        onclick="document.getElementById('historyModal').style.display='none'">Schließen</button>
 </div>
 
 {% endblock %}
@@ -58,9 +55,33 @@
 <script type="text/javascript" charset="utf-8">
     let historyChart = new Chart(document.getElementById('historyCanvas'));
 
+    const start_date = document.getElementById('start_date');
+    const end_date = document.getElementById('end_date');
+    const start_time = document.getElementById('start_time');
+    const end_time = document.getElementById('end_time');
+
+    window.addEventListener("load",(event) => {
+        set_dates();
+        set_history();
+    });
+
     function set_history() {
-        const start_time = document.getElementsByName('start_time')[0].value;
-        const end_time = document.getElementsByName('end_time')[0].value;
+        const start_date = new Date(document.getElementById('start_date').value);
+        const end_date = new Date(document.getElementById('end_date').value);
+        const start_clock = document.getElementById('start_time').value;
+        const end_clock = document.getElementById('end_time').value;
+
+        start_date.setHours(start_clock.split(':')[0]);
+        start_date.setMinutes(start_clock.split(':')[1]);
+        end_date.setHours(end_clock.split(':')[0]);
+        end_date.setMinutes(end_clock.split(':')[1]);
+
+        const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1);
+        const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1);
+
+//        const start_time = start_date.toISOString();
+//        const end_time = end_date.toISOString();
+
         const history = $("input[name='history']:checked").val();
 
         if (history == 'temperatur') {
@@ -152,6 +173,32 @@
     function convert_iso_to_timestamp(iso) {
         const date = new Date(iso);
         return date.getTime();
+    }
+
+    function set_dates() {
+        set_date(start_date);
+        set_date(end_date);
+        set_time(start_time);
+        set_time(end_time, 1, 0);
+    }
+
+    function set_date(element) {
+        const date = new Date();
+        const date_iso = date.toISOString();
+        const year = date_iso.slice(0, 4);
+        const month = date_iso.slice(5, 7);
+        const day = date_iso.slice(8, 10);
+        const date_string = year + "-" + month + "-" + day;
+        element.value = date_string;
+    }
+
+    function set_time(element, h_offset = 0, m_offset = 0) {
+        const date = new Date();
+        const date_iso = date.toISOString();
+        const hours = (parseInt(date_iso.slice(11, 13)) + h_offset).toString().padStart(2, '0');
+        const minutes = (parseInt(date_iso.slice(14, 16)) + m_offset).toString().padStart(2, '0');
+        const time_string = hours + ":" + minutes;
+        element.value = time_string;
     }
 </script>
 
