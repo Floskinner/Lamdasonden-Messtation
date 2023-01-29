@@ -7,12 +7,13 @@ from MCP3008 import TestMCP3008
 class GPIO(object):
     """Basis Klasse für die GPIO Schnittstelle"""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Handelt es sich um eine Testumgebung wird ein TestMCP3008 Objekt erstellt, ansonsten ein MCP3008 Objekt"""
         if os.environ.get("FLASK_ENV") == "development":
-            self.adc = TestMCP3008()
+            print("Create TestMCP3008 Object")
+            self.adc = TestMCP3008(*args, **kwargs)
         else:
-            self.adc = MCP3008()
+            self.adc = MCP3008(*args, **kwargs)
 
     def get_voltage(self, channel: int) -> float:
         """Gibt den Spannungswert des angegebenen Kanals zurück

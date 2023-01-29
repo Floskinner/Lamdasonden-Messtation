@@ -75,6 +75,8 @@ def update_data(update_interval: float, messure_interval: float):
                 "afr2": lamda_values["afr2"],
                 "temp1": temp_values["temp0"],
                 "temp2": temp_values["temp1"],
+                "temp1_voltage": temp_values["temp0_voltage"],
+                "temp2_voltage": temp_values["temp1_voltage"],
             }
 
             socketio.emit("newValues", data, broadcast=True)
@@ -167,9 +169,14 @@ def get_temp_values() -> dict:
 
     Returns: Dict mit den Keys "temp0" und "temp1"
     """
+    temp0, voltage0 = TEMP_SENSOR0.get_temp()
+    temp1, voltage1 = TEMP_SENSOR1.get_temp()
+
     temp_values = {
-        "temp0": TEMP_SENSOR0.get_temp(),
-        "temp1": TEMP_SENSOR1.get_temp(),
+        "temp0": temp0,
+        "temp1": temp1,
+        "temp0_voltage": voltage0,
+        "temp1_voltage": voltage1,
     }
     return temp_values
 
