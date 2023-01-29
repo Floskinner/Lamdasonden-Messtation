@@ -8,6 +8,10 @@ input {
   background-color: rgb(139, 134, 134);
 }
 
+.myChart {
+  background-color: rgb(156, 151, 151);
+}
+
 .mybackround {
   background-image: url("../images/maybach.svg");
   background-repeat: no-repeat;

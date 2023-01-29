@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<div class="w3-container">
+<div class="w3-container myChart">
     <canvas id="historyCanvas"></canvas>
 </div>
 
@@ -78,10 +78,7 @@
 
         const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1);
         const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1);
-
-//        const start_time = start_date.toISOString();
-//        const end_time = end_date.toISOString();
-
+        
         const history = $("input[name='history']:checked").val();
 
         if (history == 'temperatur') {
@@ -102,7 +99,7 @@
                 'end_time': end_time,
             },
             success: function (data) {
-                console.log(data);
+                // console.log(data);
 
                 let timestamps = [];
                 let temperatures = [];
@@ -117,13 +114,21 @@
                     data: {
                         labels: timestamps,
                         datasets: [{
-                            label: 'Temperatur',
+                            label: 'Temperatur 1',
                             data: temperatures,
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 241, 0, 0.2)',
+                            borderColor: 'rgba(255, 241, 0, 1)',
                             borderWidth: 1,
                             fill: false,
-                        }],
+                        } ],
+                        //{
+                        //    label: 'Temperatur 2',
+                        //    data: temperatures,
+                        //    backgroundColor: 'rgba(232, 18, 36, 0.2)',
+                        //    borderColor: 'rgba(232, 18, 36, 1)',
+                        //    borderWidth: 1,
+                        //    fill: false,
+                        //}],
                     },
                     type: "line",
                     options: {
