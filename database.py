@@ -15,14 +15,15 @@ class Database:
         self.__clear_temp_values()
         self.__clear_lambda_values()
 
-    def insert_temp_value(self, value: float):
+    def insert_temp_value(self, sensor_id: int, value: float):
         """Fügt einen Temperaturwert in die Datenbank mit dem Zeitstempel ein.
 
+        :param sensor_id: Sensor ID
         :param value: Temperaturwert
         """
         timestamp_int = datetime.now()
         timestamp = timestamp_int.isoformat()
-        self.execute("INSERT INTO temps VALUES (?, ?)", (timestamp, value))
+        self.execute("INSERT INTO temps VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
     def insert_temp_sensor_tracking(self, sensor_id: int, time_run_in_sec: int):
         """Fügt einen neuen Sensor mit entsprechender Laufzeit in die Datenbank hinzu.
@@ -32,21 +33,22 @@ class Database:
         """
         self.execute("INSERT INTO temp_sensor_tracking VALUES (?, ?)", (sensor_id, time_run_in_sec))
 
-    def insert_lambda_value(self, value: float):
+    def insert_lambda_value(self, sensor_id: int, value: float):
         """Fügt einen Lambda-Wert in die Datenbank mit dem Zeitstempel ein.
 
+        :param sensor_id: Sensor ID
         :param value: Lambda-Wert
         """
         timestamp_int = datetime.now()
         timestamp = timestamp_int.isoformat()
-        self.execute("INSERT INTO lambda VALUES (?, ?)", (timestamp, value))
+        self.execute("INSERT INTO lambda VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
-    def update_temp_sensor_tracking(self, time_run_in_sec: int):
+    def update_temp_sensor_tracking(self, sensor_id: int, time_run_in_sec: int):
         """Aktualisiert die Laufzeit des Sensors.
 
         :param time_run_in_sec: Laufzeit in Sekunden
         """
-        self.execute("UPDATE temp_sensor_tracking SET time_run_in_sec = ?", (time_run_in_sec,))
+        self.execute("UPDATE temp_sensor_tracking SET time_run_in_sec = ? WHERE id = ?", (time_run_in_sec, sensor_id))
 
     def get_temp_values(self) -> list:
         """Gibt alle Temperaturwerte aus der Datenbank zurück.
@@ -101,7 +103,7 @@ class Database:
         return [
             lambda_value
             for lambda_value in lambda_values
-            if start_timestamp <= datetime.fromisoformat(lambda_value[0]) <= end_timestamp
+            if start_timestamp <= datetime.fromisoformat(lambda_value[1]) <= end_timestamp
         ]
 
     def execute(self, query: str, args: tuple = ()):

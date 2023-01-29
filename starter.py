@@ -269,16 +269,14 @@ def get_settings():
     return config.get_settings()
 
 
-@app.route("/tempdata", methods=["POST"])
-def add_temp_data():
+def add_temp_data(sensor_id: int, value: float):
     """Fügt Temperaturdaten in die Datenbank ein
 
-    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    Args:
+        sensor_id (int): ID des Sensors
+        value (float): Temperaturwert
     """
-    data: dict = request.form
-    db_connection.insert_temp_value(float(data["value"]))
-
-    return Response("Success", status=200)
+    db_connection.insert_temp_value(sensor_id, value)
 
 
 @app.route("/tempdata", methods=["GET"])
@@ -297,6 +295,37 @@ def get_temp_data_between():
 
     return Response(
         json.dumps(db_connection.get_temp_values_between(start_time, end_time)),
+        status=200,
+        mimetype="application/json",
+    )
+
+
+def add_lambda_data(sensor_id: int, value: float):
+    """Fügt Lambdadaten in die Datenbank ein
+
+    Args:
+        sensor_id (int): ID des Sensors
+        value (float): Wert des Sensors
+    """
+    db_connection.insert_lambda_value(sensor_id, value)
+
+
+@app.route("/lambdadata", methods=["GET"])
+def get_lambda_data_between():
+    """Gibt Lambdadaten zwischen zwei Zeitpunkten zurück
+
+    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """
+    data: dict = request.args
+    try:
+        start_time = data["start_time"]
+        end_time = data["end_time"]
+    except KeyError as error:
+        print(error)
+        return Response("{'message':'Invalid values'}", status=400, mimetype="application/json")
+
+    return Response(
+        json.dumps(db_connection.get_lambda_values_between(start_time, end_time)),
         status=200,
         mimetype="application/json",
     )

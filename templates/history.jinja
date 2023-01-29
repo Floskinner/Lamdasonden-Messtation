@@ -60,7 +60,7 @@
     const start_time = document.getElementById('start_time');
     const end_time = document.getElementById('end_time');
 
-    window.addEventListener("load",(event) => {
+    window.addEventListener("load", (event) => {
         set_dates();
         set_history();
     });
@@ -78,7 +78,7 @@
 
         const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1);
         const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1);
-        
+
         const history = $("input[name='history']:checked").val();
 
         if (history == 'temperatur') {
@@ -89,7 +89,6 @@
     }
 
     function set_temp_history(start_time, end_time) {
-
         $.ajax({
             url: '/tempdata',
             type: 'GET',
@@ -98,101 +97,30 @@
                 'start_time': start_time,
                 'end_time': end_time,
             },
-            success: function (data) {
+            success: (data) => {
                 // console.log(data);
-
-                let timestamps_0 = [];
-                let temperatures_0 = [];
-                let timestamps_1 = [];
-                let temperatures_1 = [];
-
-                data.forEach((item, index) => {
-                    if (item[0] == 0) {
-                        timestamps_0.push(convert_iso_to_timestamp(item[1]));
-                        temperatures_0.push(item[2]);
-                    } else if (item[0] == 1) {
-                        timestamps_1.push(convert_iso_to_timestamp(item[1]));
-                        temperatures_1.push(item[2]);
-                    }
-                });
-
-                historyChart.destroy();
-                historyChart = new Chart(document.getElementById('historyCanvas'), {
-                    data: {
-                        labels: timestamps_0,
-                        datasets: [{
-                            label: 'Temperatur 1',
-                            data: temperatures_0,
-                            backgroundColor: 'rgba(255, 241, 0, 0.2)',
-                            borderColor: 'rgba(255, 241, 0, 1)',
-                            borderWidth: 1,
-                            fill: false,
-                        },
-                        {
-                            label: 'Temperatur 2',
-                            data: temperatures_1,
-                            backgroundColor: 'rgba(232, 18, 36, 0.2)',
-                            borderColor: 'rgba(232, 18, 36, 1)',
-                            borderWidth: 1,
-                            fill: false,
-                        }],
-                    },
-                    type: "line",
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: "top",
-                            },
-                            title: {
-                                display: false,
-                            },
-                            zoom: {
-                                zoom: {
-                                    wheel: {
-                                        enabled: true,
-                                    },
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    mode: 'x',
-                                },
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Zeit',
-                                },
-                                ticks: {
-                                    source: 'auto',
-                                },
-                                type: "time",
-                                time: {
-                                    unit: "second",
-                                    displayFormats: {
-                                        second: "HH:mm:ss",
-                                        minute: "HH:mm:ss",
-                                        hour: "HH:mm"
-                                    },
-                                },
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Temperatur in °C',
-                                },
-                                type: "linear",
-                                // beginAtZero: true,
-                                // suggestedMin: 0,
-                                // suggestedMax: 1200,
-                            },
-                        },
-                    },
-                });
+                create_chart(data, 'Temperatur 1', 'Temperatur 2', '°C');
             },
-            error: function (error) {
+            error: (error) => {
+                console.log(error);
+            }
+        });
+    }
+
+    function set_lambda_history(start_time, end_time) {
+        $.ajax({
+            url: '/lambdadata',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                'start_time': start_time,
+                'end_time': end_time,
+            },
+            success: (data) => {
+                // console.log(data);
+                create_chart(data, 'Lambda 1', 'Lambda 2', 'Lambda');
+            },
+            error: (error) => {
                 console.log(error);
             }
         });
@@ -227,6 +155,98 @@
         const minutes = (parseInt(date_iso.slice(14, 16)) + m_offset).toString().padStart(2, '0');
         const time_string = hours + ":" + minutes;
         element.value = time_string;
+    }
+
+    function create_chart(data, dataset0Label, dataset1Label, unit) {
+        let timestamps = [];
+        let datas_0 = [];
+        let datas_1 = [];
+
+        data.forEach((item, index) => {
+            timestamps.push(convert_iso_to_timestamp(item[1]));
+
+            if (item[0] == 0) {
+                datas_0.push(item[2]);
+            } else if (item[0] == 1) {
+                datas_1.push(item[2]);
+            }
+        });
+
+        historyChart.destroy();
+        historyChart = new Chart(document.getElementById('historyCanvas'), {
+            data: {
+                labels: timestamps,
+                datasets: [{
+                    label: dataset0Label,
+                    data: datas_0,
+                    backgroundColor: 'rgba(255, 241, 0, 0.2)',
+                    borderColor: 'rgba(255, 241, 0, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                },
+                {
+                    label: dataset1Label,
+                    data: datas_1,
+                    backgroundColor: 'rgba(232, 18, 36, 0.2)',
+                    borderColor: 'rgba(232, 18, 36, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                }],
+            },
+            type: "line",
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "top",
+                    },
+                    title: {
+                        display: false,
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'x',
+                        },
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Zeit',
+                        },
+                        ticks: {
+                            source: 'auto',
+                        },
+                        type: "time",
+                        time: {
+                            unit: "second",
+                            displayFormats: {
+                                second: "HH:mm:ss",
+                                minute: "HH:mm:ss",
+                                hour: "HH:mm"
+                            },
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: unit,
+                        },
+                        type: "linear",
+                        // beginAtZero: true,
+                        // suggestedMin: 0,
+                        // suggestedMax: 1200,
+                    },
+                },
+            },
+        });
     }
 </script>
 
