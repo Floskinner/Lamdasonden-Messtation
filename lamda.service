@@ -1,7 +1,7 @@
 # Contents of /etc/systemd/system/lamda.service
 [Unit]
 Description=Service for Lamda-Web
-After=network.target influxdb.service
+After=network.target
 
 [Service]
 User=root

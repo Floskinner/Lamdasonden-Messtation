@@ -8,14 +8,12 @@ import sys
 import time
 import traceback
 from threading import Event
-from threading import Thread
 
 from flask import Flask
 from flask import render_template
 from flask import request
 from flask import Response
 from flask_socketio import SocketIO
-from influxdb import InfluxDBClient
 
 import raspi_status as pi
 from database import db_connection
@@ -37,16 +35,6 @@ THREAD_STOP_EVENT = Event()
 CONNECTIONS_COUNTER = 0
 IS_RECORDING = False
 
-# fmt:off
-client = InfluxDBClient(
-    host="127.0.0.1",
-    port=8086,
-    username="python",
-    password="password",
-    database="lamdawerte",
-)
-# fmt:on
-
 
 def write_to_systemd(message: str):
     """Übergebene Nachrichten werden auf die Konsole ausgegeben mit print und anschließend
@@ -60,11 +48,13 @@ def write_to_systemd(message: str):
 
 
 def update_data(update_interval: float, messure_interval: float):
-    """Daten werden vom GPIO neu ausgelesen und zur Webseite übertragen
-    Ist aktuell eine Aufnahme am start, so wird  0.5 Sekunden geschlafen
+    """Diese Funktion wird in einem eigenen Thread ausgeführt und sorgt dafür, dass die Daten
+    über einen Socket an den Client gesendet werden. Die Daten werden dabei in einem bestimmten
+    Intervall aktualisiert. Die Temperaturwerte werden dabei immer gesichert, die Lambda Werte nur
+    wenn die Aufzeichnung läuft.
 
-    Args:
-        interval (float): Zeitintervall wie lange das Programm schlafen soll nach einem Update
+    :param update_interval: In welchem Intervall die Daten aktualisiert werden sollen
+    :param messure_interval: In welchem Intervall die Messwerte ermittelt werden sollen
     """
     try:
 
@@ -92,9 +82,12 @@ def update_data(update_interval: float, messure_interval: float):
             # Ohne warten wird emit nicht zuverlässig durchgeführt
             socketio.sleep(0.01)
 
+            db_connection.insert_temp_value(0, temp_values["temp0"])
+            db_connection.insert_temp_value(1, temp_values["temp1"])
+
             if IS_RECORDING:
-                record_thread = Thread(target=write_to_db, args=(data,), daemon=True)
-                record_thread.start()
+                db_connection.insert_lambda_value(0, lamda_values["lamda1"])
+                db_connection.insert_lambda_value(1, lamda_values["lamda2"])
 
     except AttributeError:
         socketio.emit(
@@ -179,31 +172,6 @@ def get_temp_values() -> dict:
         "temp1": TEMP_SENSOR1.get_temp(),
     }
     return temp_values
-
-
-def write_to_db(data: dict):
-    """Erstellt einen neuen Eintrag in der Datenbank
-
-    Args:
-        data (dict): Folgende Keys müssen vorhaben sein: ["lamda1"], ["lamda2"], ["afr1"], ["afr2"]
-    """
-
-    json_body = [
-        {
-            "measurement": "lamdawerte",
-            "tags": {"Car": "IEinAutoTag"},
-            "fields": {
-                "Lamda_1": data["lamda1"],
-                "AFR_1": data["afr1"],
-                "Lamda_2": data["lamda2"],
-                "AFR_2": data["afr2"],
-            },
-        }
-    ]
-
-    client.write_points(json_body, time_precision="ms")
-    # result = client.query('select Lamda_1 from lamdawerte;')
-    # print("Result: {0}".format(result))
 
 
 @app.route("/")
@@ -424,15 +392,6 @@ def recording(json: dict):
         IS_RECORDING = False
         write_to_systemd("stoppe Aufnahme")
 
-
-# Clean data from DB older than 6 Months
-if os.environ.get("FLASK_ENV") != "development":
-    db_delete_time_string = (
-        datetime.datetime.now() - datetime.timedelta(days=getattr(config, "DB_DELETE_AELTER_ALS"))
-    ).strftime("%Y-%m-%d")
-    query = "DELETE WHERE time < '" + db_delete_time_string + "'"
-    write_to_systemd(f"Delete Data older than {db_delete_time_string}")
-    result = client.query(query)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=8080, host="0.0.0.0")
