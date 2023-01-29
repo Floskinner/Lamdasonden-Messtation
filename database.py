@@ -69,16 +69,16 @@ class Database:
         return [
             temp_value
             for temp_value in temp_values
-            if start_timestamp <= datetime.fromisoformat(temp_value[0]) <= end_timestamp
+            if start_timestamp <= datetime.fromisoformat(temp_value[1]) <= end_timestamp
         ]
 
-    def get_temp_sensor_tracking(self) -> list:
+    def get_temp_sensor_tracking(self, sensor_id: int) -> list:
         """Gibt die Laufzeit des Sensors aus der Datenbank zurück.
 
         :return: Laufzeit des Sensors
         """
-        self.cur.execute("SELECT * FROM temp_sensor_tracking")
-        return self.cur.fetchall()
+        self.cur.execute("SELECT time_run_in_sec FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
+        return self.cur.fetchone()
 
     def get_lambda_values(self) -> list:
         """Gibt alle Lambda-Werte aus der Datenbank zurück.
@@ -112,7 +112,7 @@ class Database:
         self.conn.close()
 
     def __init_temp_values(self):
-        self.execute("CREATE TABLE IF NOT EXISTS temps (timestamp TEXT PRIMARY KEY, value float)")
+        self.execute("CREATE TABLE IF NOT EXISTS temps (sensorid integer, timestamp TEXT, value float)")
 
     def __init_temp_sensor_tracking(self):
         self.execute(
@@ -126,7 +126,7 @@ class Database:
             pass
 
     def __init_lambda_values(self):
-        self.execute("CREATE TABLE IF NOT EXISTS lambda (timestamp TEXT PRIMARY KEY, value float)")
+        self.execute("CREATE TABLE IF NOT EXISTS lambda (sensorid integer, timestamp TEXT, value float)")
 
     def __clear_temp_values(self, older_than_days: int = 30):
         now = datetime.now()

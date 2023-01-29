@@ -228,7 +228,14 @@ def history():
     """Funktion wird aufgerufen wenn auf dem Webserver der Pfad "/history" aufgerufen wird
     Rendert und gibt das Template history.jinja zurück
     """
-    return render_template("history.jinja")
+    now = datetime.datetime.now()
+    current_year = now.strftime("%Y")
+
+    template_data = {
+        "current_year": current_year,
+    }
+
+    return render_template("history.jinja", **template_data)
 
 
 @app.route("/settings", methods=["POST"])

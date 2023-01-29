@@ -101,34 +101,41 @@
             success: function (data) {
                 // console.log(data);
 
-                let timestamps = [];
-                let temperatures = [];
+                let timestamps_0 = [];
+                let temperatures_0 = [];
+                let timestamps_1 = [];
+                let temperatures_1 = [];
 
                 data.forEach((item, index) => {
-                    timestamps.push(convert_iso_to_timestamp(item[0]));
-                    temperatures.push(item[1]);
+                    if (item[0] == 0) {
+                        timestamps_0.push(convert_iso_to_timestamp(item[1]));
+                        temperatures_0.push(item[2]);
+                    } else if (item[0] == 1) {
+                        timestamps_1.push(convert_iso_to_timestamp(item[1]));
+                        temperatures_1.push(item[2]);
+                    }
                 });
 
                 historyChart.destroy();
                 historyChart = new Chart(document.getElementById('historyCanvas'), {
                     data: {
-                        labels: timestamps,
+                        labels: timestamps_0,
                         datasets: [{
                             label: 'Temperatur 1',
-                            data: temperatures,
+                            data: temperatures_0,
                             backgroundColor: 'rgba(255, 241, 0, 0.2)',
                             borderColor: 'rgba(255, 241, 0, 1)',
                             borderWidth: 1,
                             fill: false,
-                        } ],
-                        //{
-                        //    label: 'Temperatur 2',
-                        //    data: temperatures,
-                        //    backgroundColor: 'rgba(232, 18, 36, 0.2)',
-                        //    borderColor: 'rgba(232, 18, 36, 1)',
-                        //    borderWidth: 1,
-                        //    fill: false,
-                        //}],
+                        },
+                        {
+                            label: 'Temperatur 2',
+                            data: temperatures_1,
+                            backgroundColor: 'rgba(232, 18, 36, 0.2)',
+                            borderColor: 'rgba(232, 18, 36, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                        }],
                     },
                     type: "line",
                     options: {
@@ -154,16 +161,32 @@
                         },
                         scales: {
                             x: {
+                                title: {
+                                    display: true,
+                                    text: 'Zeit',
+                                },
+                                ticks: {
+                                    source: 'auto',
+                                },
                                 type: "time",
                                 time: {
-                                    unit: "minute",
+                                    unit: "second",
                                     displayFormats: {
+                                        second: "HH:mm:ss",
                                         minute: "HH:mm:ss",
+                                        hour: "HH:mm"
                                     },
                                 },
                             },
                             y: {
+                                title: {
+                                    display: true,
+                                    text: 'Temperatur in °C',
+                                },
                                 type: "linear",
+                                // beginAtZero: true,
+                                // suggestedMin: 0,
+                                // suggestedMax: 1200,
                             },
                         },
                     },
