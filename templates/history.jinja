@@ -76,8 +76,8 @@
         end_date.setHours(end_clock.split(':')[0]);
         end_date.setMinutes(end_clock.split(':')[1]);
 
-        const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1);
-        const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1);
+        const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1) + "+00:00";
+        const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1) + "+00:00";
 
         const history = $("input[name='history']:checked").val();
 

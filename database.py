@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from pathlib import Path
 
 
@@ -21,7 +22,7 @@ class Database:
         :param sensor_id: Sensor ID
         :param value: Temperaturwert
         """
-        timestamp_int = datetime.now()
+        timestamp_int = datetime.now(tz=timezone.utc)
         timestamp = timestamp_int.isoformat()
         self.execute("INSERT INTO temps VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
@@ -39,7 +40,7 @@ class Database:
         :param sensor_id: Sensor ID
         :param value: Lambda-Wert
         """
-        timestamp_int = datetime.now()
+        timestamp_int = datetime.now(tz=timezone.utc)
         timestamp = timestamp_int.isoformat()
         self.execute("INSERT INTO lambda VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
@@ -131,16 +132,16 @@ class Database:
         self.execute("CREATE TABLE IF NOT EXISTS lambda (sensorid integer, timestamp TEXT, value float)")
 
     def __clear_temp_values(self, older_than_days: int = 30):
-        now = datetime.now()
+        now = datetime.now(tz=timezone.utc)
         older_than = now - timedelta(days=older_than_days)
         older_than_str = older_than.isoformat()
         self.execute("DELETE FROM temps WHERE timestamp < ?", (older_than_str,))
 
     def __clear_lambda_values(self, older_than_days: int = 30):
-        now = datetime.now()
+        now = datetime.now(tz=timezone.utc)
         older_than = now - timedelta(days=older_than_days)
         older_than_str = older_than.isoformat()
         self.execute("DELETE FROM lambda WHERE timestamp < ?", (older_than_str,))
 
 
-db_connection = Database("MAMA.sqlite")
+db_connection = Database(Path("MAMA.sqlite"))

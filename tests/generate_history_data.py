@@ -1,12 +1,13 @@
 import random
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 
 from database import db_connection
 
 
 def generate_temp_data():
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
 
     print(f"Generating temp data for {now}")
     for i in range(60):
@@ -18,7 +19,7 @@ def generate_temp_data():
 
 
 def generate_lambda_data():
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
 
     print(f"Generating lambda data for {now}")
     for i in range(60):
