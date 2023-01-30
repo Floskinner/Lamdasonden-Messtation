@@ -1,15 +1,18 @@
+:root {
+  --main-color: rgb(139, 134, 134);
+  --main-color-light: rgb(156, 151, 151);
+  --main-color-dark: rgb(110, 108, 108);
+  --main-color-text: black;
+}
+
 html,
 body {
   height: 100%;
-  background-color: rgb(139, 134, 134);
+  background-color: var(--main-color);
 }
 
 input {
-  background-color: rgb(139, 134, 134);
-}
-
-.myChart {
-  background-color: rgb(156, 151, 151);
+  background-color: var(--main-color);
 }
 
 .mybackround {
@@ -48,12 +51,12 @@ input {
 }
 
 .w3-modal-content {
-  background-color: rgb(156, 151, 151);
+  background-color: var(--main-color-light);
   height: 80%;
 }
 
 .modalHeaderFooter {
-  background-color: rgb(110, 108, 108);
+  background-color: var(--main-color-dark);
   color: white;
   height: 80%;
   height: fit-content;
@@ -62,6 +65,40 @@ input {
 .modalBody {
   overflow-y: auto;
   height: inherit
+}
+
+.base-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 5% 90% 5%;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+  height: 100%;
+}
+
+.header {
+  grid-area: header;
+  background-color: var(--main-color-dark);
+  color: var(--main-color-text);
+  height: 100%;
+}
+
+.main-body {
+  grid-area: main;
+  background-color: var(--main-color-light);
+  height: 100%;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: var(--main-color-dark);
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 @media only screen and (min-width: 768px) {

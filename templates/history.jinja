@@ -1,42 +1,50 @@
 {% extends "base.jinja" %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="../static/css/history.css">
+{% endblock head %}
+
 {% block title %}Verlauf{% endblock title %}
 
 {% block pageNavbar %}
-<a href="/" class="w3-bar-item w3-button w3-left fa fa-arrow-left" style="font-size:24px"></a>
+<a href="/" class="w3-bar-item w3-button w3-left fa fa-arrow-left" style="font-size: 3vh"></a>
 
 {{ super() }}
 {% endblock pageNavbar %}
 
-
 {% block main %}
 
+<div id="chartContainer">
 
-<div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
-    <h2><b>Verlauf</b></h2>
-    <div class="w3-container" style="margin-bottom: 15px;">
-        <label>Temperatur</label>
-        <input class="w3-radio" type="radio" name="history" value="temperatur" onchange="set_history()" checked>
-        <label>Lambda</label>
-        <input class="w3-radio" type="radio" name="history" value="lambda" onchange="set_history()">
+    <div class="header w3-center">
+        <h2><b>Verlauf</b></h2>
+        <div class="w3-container" style="margin-bottom: 15px;">
+            <label>Temperatur</label>
+            <input class="w3-radio" type="radio" name="history" value="temperatur" onchange="set_history()" checked>
+            <label>Lambda</label>
+            <input class="w3-radio" type="radio" name="history" value="lambda" onchange="set_history()">
+        </div>
     </div>
-</div>
 
-<div class="w3-container myChart">
-    <canvas id="historyCanvas"></canvas>
-</div>
+    <div class="canvas">
+        <canvas id="historyCanvas"></canvas>
+    </div>
 
-<div class="w3-container>" style="margin-bottom: 15px;">
+    <div class="footer">
+        <label style="grid-area: tl1;">Von</label>
+        <input id="start_date" type="date" style="grid-area: tl2;">
+        <input id="start_time" type="time" style="grid-area: tl3;">
 
-    <label>Von</label>
-    <input id="start_date" type="date">
-    <input id="start_time" type="time">
-    <label>Bis</label>
-    <input id="end_date" type="date">
-    <input id="end_time" type="time">
+        <label style="grid-area: bl1;">Bis</label>
+        <input id="end_date" type="date" style="grid-area: bl2;">
+        <input id="end_time" type="time" style="grid-area: bl3;">
 
-    <button type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
-        onclick="set_history()">Anzeigen</button>
+        <button type="button" class="w3-button w3-round-large w3-border w3-green"
+            onclick="set_history()">Anzeigen</button>
+
+    </div>
+
 </div>
 
 {% endblock %}
@@ -194,7 +202,7 @@
             },
             type: "line",
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: "top",
