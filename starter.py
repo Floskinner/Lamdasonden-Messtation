@@ -82,7 +82,7 @@ def update_data(update_interval: float, messure_interval: float):
             socketio.emit("newValues", data, broadcast=True)
 
             # Ohne warten wird emit nicht zuverlässig durchgeführt
-            socketio.sleep(0.01)
+            socketio.sleep(0)
 
             db_connection.insert_temp_value(0, temp_values["temp0"])
             db_connection.insert_temp_value(1, temp_values["temp1"])

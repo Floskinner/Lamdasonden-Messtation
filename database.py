@@ -68,7 +68,7 @@ class Database:
         """
         start_timestamp = datetime.fromisoformat(start)
         end_timestamp = datetime.fromisoformat(end)
-        temp_values = self.get_temp_values()
+        temp_values = self.get_temp_values()  # type: list
         return [
             temp_value
             for temp_value in temp_values

@@ -30,7 +30,7 @@ class TypKTemperaturSensor(GPIO):
         temp = int(250 * voltage)
         return temp
 
-    def get_temp(self) -> Tuple[int]:
+    def get_temp(self) -> Tuple[int, float]:
         """Gibt die Temperatur in Grad Celsius zurück
 
         :param channel: GPIO Pin an dem der Temperatursensor angeschlossen ist
