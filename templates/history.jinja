@@ -163,9 +163,8 @@
         let datas_1 = [];
 
         data.forEach((item, index) => {
-            timestamps.push(convert_iso_to_timestamp(item[1]));
-
             if (item[0] == 0) {
+                timestamps.push(convert_iso_to_timestamp(item[1])); // Die Zeitstempel für die x-Achse muss nur einmal pro Datensatz ermittelt werden
                 datas_0.push(item[2]);
             } else if (item[0] == 1) {
                 datas_1.push(item[2]);
