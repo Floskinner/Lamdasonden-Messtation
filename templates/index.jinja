@@ -2,13 +2,25 @@
 
 {% block title %}Lamdawerte{% endblock title %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="../static/css/lambda.css">
+{% endblock head %}
+
 {% block pageNavbar %}
-<div class="w3-bar-item">
-    Aufnahme:
+
+<div class="header-left">
+    <span style="font-size: 2vh;">Aufnahme:</span>
     <label class="switch">
         <input id="recording" type="checkbox">
         <span class="slider round"></span>
     </label>
+</div>
+
+<div class="header-right">
+    <a id="historyIcon" href="/history" class="w3-bar-item w3-button w3-right fa fa-history"></a>
+    <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears"
+        onclick="openMenue()"></i>
 </div>
 
 {{ super() }}
@@ -16,7 +28,12 @@
 
 {% block main %}
 {% include "baenke.jinja" %}
+
 {% include "temperaturen.jinja" %}
+
+<!-- Config Modal -->
+{% include "config_modal.jinja" %}
+
 {% endblock %}
 
 
@@ -38,12 +55,12 @@
         // Anwenden der Konfiguration
         show_values(
             {{ ANZEIGEN_BANK_1 | default("true") | lower}},
-            {{ ANZEIGEN_BANK_2 | default("true") | lower}},
-            {{ ANZEIGEN_TEMP_1 | default("true") | lower}},
-            {{ ANZEIGEN_TEMP_2 | default("true") | lower}}
-        );
-        blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
-        decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
+        {{ ANZEIGEN_BANK_2 | default("true") | lower}},
+        {{ ANZEIGEN_TEMP_1 | default("true") | lower}},
+        {{ ANZEIGEN_TEMP_2 | default("true") | lower}}
+    );
+    blinking = {{ WARNUNG_BLINKEN | default ("false") | lower }};
+    decimalPlaces = {{ NACHKOMMASTELLEN | default ("2") }};
     });
 
 
@@ -52,6 +69,7 @@
 
             // Hide Button wenn aufgenommen wird
             $('#menueIcon').hide("slow");
+            $('#historyIcon').hide("slow");
 
             socket.emit("recording", {
                 "recording": true
@@ -59,6 +77,7 @@
         } else {
             // Show Button wenn aufgenommen stoppt
             $('#menueIcon').show("slow");
+            $('#historyIcon').show("slow");
 
             socket.emit("recording", {
                 "recording": false
@@ -71,14 +90,14 @@
         show_temp(temp1, temp2);
 
         // Sklaierung der Anzeigen anpassen, wenn ein Wert nicht angezeigt wird
-        if (bank1 || bank2){
+        if (bank1 || bank2) {
             $("#tempContainer").height("50%");
         }
         else {
             $("#tempContainer").height("100%");
         }
 
-        if (temp1 || temp2){
+        if (temp1 || temp2) {
             $("#bankContainer").height("50%");
         }
         else {
@@ -97,7 +116,7 @@
 
     function show_banks(bank1, bank2) {
 
-        if(!bank1 && !bank2){
+        if (!bank1 && !bank2) {
             $("#bankContainer").hide();
             return;
         }

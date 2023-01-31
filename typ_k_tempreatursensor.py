@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from GPIO import GPIO
 
 
@@ -12,7 +14,7 @@ class TypKTemperaturSensor(GPIO):
 
         :param channel: ADC Pin an dem der Temperatursensor angeschlossen ist
         """
-        super().__init__()
+        super().__init__(test_summand=100)
         self.channel = channel
 
     @staticmethod
@@ -28,12 +30,12 @@ class TypKTemperaturSensor(GPIO):
         temp = int(250 * voltage)
         return temp
 
-    def get_temp(self) -> int:
+    def get_temp(self) -> Tuple[int, float]:
         """Gibt die Temperatur in Grad Celsius zurück
 
         :param channel: GPIO Pin an dem der Temperatursensor angeschlossen ist
-        :return: Temperatur in Grad Celsius (0-1360°C)
+        :return: Temperatur in Grad Celsius (0-1360°C) und Spannungswert (0-5V)
         """
         voltage = self.get_voltage(self.channel)
         temp = self.calculate_temp(voltage)
-        return temp
+        return (temp, voltage)

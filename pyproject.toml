@@ -8,7 +8,6 @@ authors = ["Florian Glaser <58706771+Floskinner@users.noreply.github.com>"]
 python = "3.7.3"
 Flask = "^2.1.2"
 gunicorn = "^20.1.0"
-influxdb = "^5.3.1"
 Flask-SocketIO = "^5.1.2"
 Jinja2 = "^3.1.2"
 psutil = "^5.9.0"

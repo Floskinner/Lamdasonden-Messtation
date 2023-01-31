@@ -1,0 +1,260 @@
+{% extends "base.jinja" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="../static/css/history.css">
+{% endblock head %}
+
+{% block title %}Verlauf{% endblock title %}
+
+{% block pageNavbar %}
+<a href="/" class="header-left w3-button fa fa-arrow-left" ></a>
+
+{{ super() }}
+{% endblock pageNavbar %}
+
+{% block main %}
+
+<div id="chartContainer">
+
+    <div class="hheader w3-center">
+        <h2><b>Verlauf</b></h2>
+        <div class="w3-container" style="margin-bottom: 15px;">
+            <label>Temperatur</label>
+            <input class="w3-radio" type="radio" name="history" value="temperatur" onchange="set_history()" checked>
+            <label>Lambda</label>
+            <input class="w3-radio" type="radio" name="history" value="lambda" onchange="set_history()">
+        </div>
+    </div>
+
+    <div class="hcanvas">
+        <canvas id="historyCanvas"></canvas>
+    </div>
+
+    <div class="hfooter">
+        <label style="grid-area: tl1;">Von</label>
+        <input id="start_date" type="date" style="grid-area: tl2;">
+        <input id="start_time" type="time" style="grid-area: tl3;">
+
+        <label style="grid-area: bl1;">Bis</label>
+        <input id="end_date" type="date" style="grid-area: bl2;">
+        <input id="end_time" type="time" style="grid-area: bl3;">
+
+        <button type="button" class="w3-button w3-round-large w3-border w3-green"
+            onclick="set_history()">Anzeigen</button>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javaScript %}
+{{ super() }}
+<script src="../static/javascript/chart/chart.umd.js"></script>
+<script src="../static/javascript/chart/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="../static/javascript/chart/hammerjs@2.0.8"></script>
+<script src="../static/javascript/chart/chartjs-plugin-zoom.min.js"></script>
+{% endblock javaScript %}
+
+
+{% block pageJavaScript %}
+
+<script type="text/javascript" charset="utf-8">
+    let historyChart = new Chart(document.getElementById('historyCanvas'));
+
+    const start_date = document.getElementById('start_date');
+    const end_date = document.getElementById('end_date');
+    const start_time = document.getElementById('start_time');
+    const end_time = document.getElementById('end_time');
+
+    window.addEventListener("load", (event) => {
+        set_dates();
+        set_history();
+    });
+
+    function set_history() {
+        const start_date = new Date(document.getElementById('start_date').value);
+        const end_date = new Date(document.getElementById('end_date').value);
+        const start_clock = document.getElementById('start_time').value;
+        const end_clock = document.getElementById('end_time').value;
+
+        start_date.setHours(start_clock.split(':')[0]);
+        start_date.setMinutes(start_clock.split(':')[1]);
+        end_date.setHours(end_clock.split(':')[0]);
+        end_date.setMinutes(end_clock.split(':')[1]);
+
+        const start_time = new Date(start_date.toUTCString()).toISOString().slice(0, -1) + "+00:00";
+        const end_time = new Date(end_date.toUTCString()).toISOString().slice(0, -1) + "+00:00";
+
+        const history = $("input[name='history']:checked").val();
+
+        if (history == 'temperatur') {
+            set_temp_history(start_time, end_time);
+        } else if (history == 'lambda') {
+            set_lambda_history(start_time, end_time);
+        }
+    }
+
+    function set_temp_history(start_time, end_time) {
+        $.ajax({
+            url: '/tempdata',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                'start_time': start_time,
+                'end_time': end_time,
+            },
+            success: (data) => {
+                // console.log(data);
+                create_chart(data, 'Temperatur 1', 'Temperatur 2', '°C');
+            },
+            error: (error) => {
+                console.log(error);
+            }
+        });
+    }
+
+    function set_lambda_history(start_time, end_time) {
+        $.ajax({
+            url: '/lambdadata',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                'start_time': start_time,
+                'end_time': end_time,
+            },
+            success: (data) => {
+                // console.log(data);
+                create_chart(data, 'Lambda 1', 'Lambda 2', 'Lambda');
+            },
+            error: (error) => {
+                console.log(error);
+            }
+        });
+    }
+
+    function convert_iso_to_timestamp(iso) {
+        const date = new Date(iso);
+        return date.getTime();
+    }
+
+    function set_dates() {
+        set_date(start_date);
+        set_date(end_date);
+        set_time(start_time);
+        set_time(end_time, 1, 0);
+    }
+
+    function set_date(element) {
+        const date = new Date();
+        const date_iso = date.toISOString();
+        const year = date_iso.slice(0, 4);
+        const month = date_iso.slice(5, 7);
+        const day = date_iso.slice(8, 10);
+        const date_string = year + "-" + month + "-" + day;
+        element.value = date_string;
+    }
+
+    function set_time(element, h_offset = 0, m_offset = 0) {
+        const date = new Date();
+        const date_iso = date.toISOString();
+        const hours = (parseInt(date_iso.slice(11, 13)) + h_offset).toString().padStart(2, '0');
+        const minutes = (parseInt(date_iso.slice(14, 16)) + m_offset).toString().padStart(2, '0');
+        const time_string = hours + ":" + minutes;
+        element.value = time_string;
+    }
+
+    function create_chart(data, dataset0Label, dataset1Label, unit) {
+        let timestamps = [];
+        let datas_0 = [];
+        let datas_1 = [];
+
+        data.forEach((item, index) => {
+            if (item[0] == 0) {
+                timestamps.push(convert_iso_to_timestamp(item[1])); // Die Zeitstempel für die x-Achse muss nur einmal pro Datensatz ermittelt werden
+                datas_0.push(item[2]);
+            } else if (item[0] == 1) {
+                datas_1.push(item[2]);
+            }
+        });
+
+        historyChart.destroy();
+        historyChart = new Chart(document.getElementById('historyCanvas'), {
+            data: {
+                labels: timestamps,
+                datasets: [{
+                    label: dataset0Label,
+                    data: datas_0,
+                    backgroundColor: 'rgba(255, 241, 0, 0.2)',
+                    borderColor: 'rgba(255, 241, 0, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                },
+                {
+                    label: dataset1Label,
+                    data: datas_1,
+                    backgroundColor: 'rgba(232, 18, 36, 0.2)',
+                    borderColor: 'rgba(232, 18, 36, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                }],
+            },
+            type: "line",
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "top",
+                    },
+                    title: {
+                        display: false,
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'x',
+                        },
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Zeit',
+                        },
+                        ticks: {
+                            source: 'auto',
+                        },
+                        type: "time",
+                        time: {
+                            unit: "second",
+                            displayFormats: {
+                                second: "HH:mm:ss",
+                                minute: "HH:mm:ss",
+                                hour: "HH:mm"
+                            },
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: unit,
+                        },
+                        type: "linear",
+                        // beginAtZero: true,
+                        // suggestedMin: 0,
+                        // suggestedMax: 1200,
+                    },
+                },
+            },
+        });
+    }
+</script>
+
+{% endblock pageJavaScript %}
