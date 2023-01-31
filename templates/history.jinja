@@ -8,7 +8,7 @@
 {% block title %}Verlauf{% endblock title %}
 
 {% block pageNavbar %}
-<a href="/" class="w3-bar-item w3-button w3-left fa fa-arrow-left" style="font-size: 3vh"></a>
+<a href="/" class="header-left w3-button fa fa-arrow-left" ></a>
 
 {{ super() }}
 {% endblock pageNavbar %}
@@ -17,7 +17,7 @@
 
 <div id="chartContainer">
 
-    <div class="header w3-center">
+    <div class="hheader w3-center">
         <h2><b>Verlauf</b></h2>
         <div class="w3-container" style="margin-bottom: 15px;">
             <label>Temperatur</label>
@@ -27,11 +27,11 @@
         </div>
     </div>
 
-    <div class="canvas">
+    <div class="hcanvas">
         <canvas id="historyCanvas"></canvas>
     </div>
 
-    <div class="footer">
+    <div class="hfooter">
         <label style="grid-area: tl1;">Von</label>
         <input id="start_date" type="date" style="grid-area: tl2;">
         <input id="start_time" type="time" style="grid-area: tl3;">
