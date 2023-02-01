@@ -89,6 +89,14 @@ socket.on("error", (error) => {
     $('#errorModal').css('display', 'block');
 });
 
+socket.on("info", (info) => {
+    console.log(info);
+
+    $("#infoModalInfoText").html(info.msg);
+
+    $('#infoModal').css('display', 'block');
+});
+
 function updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2) {
     $('#lamda1').html(lamda1.toFixed(decimalPlaces) + " &lambda;");
     $('#lamda2').html(lamda2.toFixed(decimalPlaces) + " &lambda;");

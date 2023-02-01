@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from pathlib import Path
+from typing import Any
 
 
 class Database:
@@ -26,13 +27,13 @@ class Database:
         timestamp = timestamp_int.isoformat()
         self.execute("INSERT INTO temps VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
-    def insert_temp_sensor_tracking(self, sensor_id: int, time_run_in_sec: int):
+    def insert_temp_sensor_tracking(self, sensor_id: int, time_run_in_min: int):
         """Fügt einen neuen Sensor mit entsprechender Laufzeit in die Datenbank hinzu.
 
         :param sensor_id: Sensor ID
-        :param time_run_in_sec: Laufzeit in Sekunden
+        :param time_run_in_min: Laufzeit in Sekunden
         """
-        self.execute("INSERT INTO temp_sensor_tracking VALUES (?, ?)", (sensor_id, time_run_in_sec))
+        self.execute("INSERT INTO temp_sensor_tracking VALUES (?, ?)", (sensor_id, time_run_in_min))
 
     def insert_lambda_value(self, sensor_id: int, value: float):
         """Fügt einen Lambda-Wert in die Datenbank mit dem Zeitstempel ein.
@@ -44,12 +45,12 @@ class Database:
         timestamp = timestamp_int.isoformat()
         self.execute("INSERT INTO lambda VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
-    def update_temp_sensor_tracking(self, sensor_id: int, time_run_in_sec: int):
+    def update_temp_sensor_tracking(self, sensor_id: int, time_run_in_min: int):
         """Aktualisiert die Laufzeit des Sensors.
 
-        :param time_run_in_sec: Laufzeit in Sekunden
+        :param time_run_in_min: Laufzeit in Minuten
         """
-        self.execute("UPDATE temp_sensor_tracking SET time_run_in_sec = ? WHERE id = ?", (time_run_in_sec, sensor_id))
+        self.execute("UPDATE temp_sensor_tracking SET time_run_in_min = ? WHERE id = ?", (time_run_in_min, sensor_id))
 
     def get_temp_values(self) -> list:
         """Gibt alle Temperaturwerte aus der Datenbank zurück.
@@ -75,12 +76,12 @@ class Database:
             if start_timestamp <= datetime.fromisoformat(temp_value[1]) <= end_timestamp
         ]
 
-    def get_temp_sensor_tracking(self, sensor_id: int) -> list:
+    def get_temp_sensor_tracking(self, sensor_id: int) -> Any:
         """Gibt die Laufzeit des Sensors aus der Datenbank zurück.
 
         :return: Laufzeit des Sensors
         """
-        self.cur.execute("SELECT time_run_in_sec FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
+        self.cur.execute("SELECT time_run_in_min FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
         return self.cur.fetchone()
 
     def get_lambda_values(self) -> list:
@@ -119,7 +120,7 @@ class Database:
 
     def __init_temp_sensor_tracking(self):
         self.execute(
-            "CREATE TABLE IF NOT EXISTS temp_sensor_tracking (id INTEGER PRIMARY KEY, time_run_in_sec integer)"
+            "CREATE TABLE IF NOT EXISTS temp_sensor_tracking (id INTEGER PRIMARY KEY, time_run_in_min integer)"
         )
 
         try:

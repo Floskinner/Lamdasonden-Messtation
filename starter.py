@@ -30,6 +30,7 @@ LAMDA_SENSOR1 = LambdaSensor(getattr(config, "LAMDA1_CHANNEL"))
 TEMP_SENSOR0 = TypKTemperaturSensor(getattr(config, "TEMPERATUR0_CHANNEL"))
 TEMP_SENSOR1 = TypKTemperaturSensor(getattr(config, "TEMPERATUR1_CHANNEL"))
 UPDATE_DATA_THREAD = None
+TMP_CHECK_THREAD = None
 THREAD_STOP_EVENT = Event()
 
 CONNECTIONS_COUNTER = 0
@@ -84,8 +85,11 @@ def update_data(update_interval: float, messure_interval: float):
             # Ohne warten wird emit nicht zuverlässig durchgeführt
             socketio.sleep(0)
 
-            db_connection.insert_temp_value(0, temp_values["temp0"])
-            db_connection.insert_temp_value(1, temp_values["temp1"])
+            if temp_values["temp0"] > 100:
+                db_connection.insert_temp_value(0, temp_values["temp0"])
+
+            if temp_values["temp1"] > 100:
+                db_connection.insert_temp_value(1, temp_values["temp1"])
 
             if IS_RECORDING:
                 db_connection.insert_lambda_value(0, lamda_values["lamda1"])
@@ -179,6 +183,49 @@ def get_temp_values() -> dict:
         "temp1_voltage": voltage1,
     }
     return temp_values
+
+
+def check_temp_runtime() -> None:
+    """Überprüft ob die Temperaturwerte der beiden Sensoren in der Konfiguration
+    angegebenen Zeitraum überschritten wurden
+    """
+    update_frequency_sec = 60
+
+    while True:
+        temp_values = get_temp_values()
+
+        current_lifespan0 = db_connection.get_temp_sensor_tracking(0)[0]
+        current_lifespan1 = db_connection.get_temp_sensor_tracking(1)[0]
+
+        if temp_values["temp0"] > 100:
+            current_lifespan0 += int(update_frequency_sec / 60)
+            db_connection.update_temp_sensor_tracking(0, current_lifespan0)
+
+        if temp_values["temp1"] > 100:
+            current_lifespan1 += int(update_frequency_sec / 60)
+            db_connection.update_temp_sensor_tracking(1, current_lifespan1)
+
+        # Wenn die Lebensdauer der Sensoren überschritten wurde, wird ein Event an den Client gesendet
+        # dies sind 60min * 100 = 100 Stunden
+        if current_lifespan0 > 60 * 100:
+            socketio.emit(
+                "info",
+                {
+                    "msg": f"Achtung die Lebensdauer des Temperatursensors 0 wurde überschritten. Er wurde bereits {int(current_lifespan0 / 60)} Stunden betrieben. Bitte ersetzen!",
+                },
+                broadcast=True,
+            )
+
+        if current_lifespan1 > 60 * 100:
+            socketio.emit(
+                "info",
+                {
+                    "msg": f"Achtung die Lebensdauer des Temperatursensors 1 wurde überschritten. Er wurde bereits {int(current_lifespan1 / 60)} Stunden betrieben. Bitte ersetzen!",
+                },
+                broadcast=True,
+            )
+
+        socketio.sleep(update_frequency_sec)
 
 
 @app.route("/")
@@ -275,6 +322,17 @@ def get_temp_data_between():
     )
 
 
+@app.route("/reset_temp_sensors", methods=["POST"])
+def reset_temp_sensors():
+    """Setzt die Lebensdauer der Temperatursensoren zurück
+
+    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """
+    data: dict = request.form
+    db_connection.update_temp_sensor_tracking(int(data["sensor"]), 0)
+    return Response("Success", status=200)
+
+
 def add_lambda_data(sensor_id: int, value: float):
     """Fügt Lambdadaten in die Datenbank ein
 
@@ -340,6 +398,7 @@ def connected(json: dict):
     """
 
     global UPDATE_DATA_THREAD
+    global TMP_CHECK_THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
 
@@ -358,6 +417,9 @@ def connected(json: dict):
             getattr(config, "UPDATE_INTERVAL"),
             getattr(config, "MESSURE_INTERVAL"),
         )
+
+    if TMP_CHECK_THREAD is None or not TMP_CHECK_THREAD.is_alive():
+        TMP_CHECK_THREAD = socketio.start_background_task(check_temp_runtime)
 
 
 @socketio.on("disconnect")
@@ -384,7 +446,7 @@ def disconnect():
 
 @socketio.on("recording")
 def recording(json: dict):
-    """Startet oder stoppt die Aufnahem von Daten, welche in der InfluxDB gespeichert werden
+    """Startet oder stoppt die Aufnahem von Daten, welche in der db gespeichert werden
 
     Args:
         json (dict): Key ["recording"] mit true oder false
