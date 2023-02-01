@@ -1,0 +1,20 @@
+<div id="infoModal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="background-color: rgb(156, 151, 151);">
+
+        <div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
+            <span onclick="document.getElementById('infoModal').style.display='none'"
+                class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close">&times;</span>
+            <h2><b>Hinweis!</b></h2>
+        </div>
+
+        <div class="w3-container w3-text-amber">
+            <p><b>Hinweis:</b></p>
+            <p id="infoModalInfoText"></p>
+        </div>
+
+        <div class="w3-container w3-padding-16">
+            <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
+                onclick="document.getElementById('infoModal').style.display='none'">Schließen</button>
+        </div>
+    </div>
+</div>

@@ -43,6 +43,15 @@
 
             <hr>
 
+            <h4>Reset Temperatursensoren:</h4>
+            <div class="w3-button w3-round-large w3-border w3-gray"
+                onclick=reset_temp_sensors(0)>Zurücksetzten von Sensor 1 &#128993</div>
+
+            <div class="w3-button w3-round-large w3-border w3-gray"
+                onclick=reset_temp_sensors(1)>Zurücksetzten von Sensor 2 &#128308</div>
+
+            <hr>
+
             <h4>Korrekturfaktor für Lamdaberechnung:</h4>
             <label>Neukalibrierung? </label><input id="do_neukalibrierung" class="w3-check" type="checkbox"
                 onchange=toggle_correction()><br>
@@ -161,5 +170,24 @@
         }
 
         $('#warning').toggle();
+    }
+
+    function reset_temp_sensors(senor) {
+        $.ajax({
+            type: "POST",
+            url: "/reset_temp_sensors",
+            data: {
+                "sensor": senor
+            },
+            statusCode: {
+                400: () => {
+                    alert("Reset not Saved! Please check!");
+                },
+                200: () => {
+                    alert("Reset Saved!");
+                }
+            },
+            dataType: "json"
+        });
     }
 </script>
