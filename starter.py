@@ -30,7 +30,9 @@ LAMDA_SENSOR1 = LambdaSensor(getattr(config, "LAMDA1_CHANNEL"))
 TEMP_SENSOR0 = TypKTemperaturSensor(getattr(config, "TEMPERATUR0_CHANNEL"))
 TEMP_SENSOR1 = TypKTemperaturSensor(getattr(config, "TEMPERATUR1_CHANNEL"))
 UPDATE_DATA_THREAD = None
-TMP_CHECK_THREAD = None
+SENOR_LIFETIME_THREAD = None
+SENSOR_OVERHEAD_THREAD = None
+SENSOR_CHECK_ERROR_THREAD = None
 THREAD_STOP_EVENT = Event()
 
 CONNECTIONS_COUNTER = 0
@@ -58,12 +60,10 @@ def update_data(update_interval: float, messure_interval: float):
     :param messure_interval: In welchem Intervall die Messwerte ermittelt werden sollen
     """
     try:
-
         sampling_rate = messure_interval
         number_of_lamda_values = round(update_interval / sampling_rate)
 
         while not THREAD_STOP_EVENT.isSet():
-
             lamda_values = get_lamda_values(number_of_lamda_values, sampling_rate)
             temp_values = get_temp_values()
 
@@ -185,10 +185,8 @@ def get_temp_values() -> dict:
     return temp_values
 
 
-def check_temp_runtime() -> None:
-    """Überprüft ob die Temperaturwerte der beiden Sensoren in der Konfiguration
-    angegebenen Zeitraum überschritten wurden
-    """
+def update_lifetime() -> None:
+    """Aktuallisiert die Lebenszeit der Sensoren"""
     update_frequency_sec = 60
 
     while True:
@@ -205,22 +203,84 @@ def check_temp_runtime() -> None:
             current_lifespan1 += int(update_frequency_sec / 60)
             db_connection.update_temp_sensor_tracking(1, current_lifespan1)
 
-        # Wenn die Lebensdauer der Sensoren überschritten wurde, wird ein Event an den Client gesendet
+        # Wenn die Lebensdauer der Sensoren überschritten wurde, wird ein Fehler gesetzt
         # dies sind 60min * 100 = 100 Stunden
         if current_lifespan0 > 60 * 100:
+            db_connection.set_error_state(
+                0,
+                True,
+                f"Maximale Lebensdauer überschritten! Er wurde bereits {int(current_lifespan1 / 60)} Stunden betrieben. Bitte ersetzen!",
+            )
+
+        if current_lifespan1 > 60 * 100:
+            db_connection.set_error_state(
+                1,
+                True,
+                f"Maximale Lebensdauer überschritten! Er wurde bereits {int(current_lifespan1 / 60)} Stunden betrieben. Bitte ersetzen!",
+            )
+
+        socketio.sleep(update_frequency_sec)
+
+
+def check_overheating() -> None:
+    """Check for overheading. True if the temperature is over 1100°C for more than 2 seconds"""
+
+    update_frequency_sec = 2
+    time0 = 0
+    time1 = 0
+
+    while True:
+        temp_values = get_temp_values()
+
+        if temp_values["temp0"] > 1100:
+            time0 += update_frequency_sec
+        else:
+            time0 = 0
+
+        if temp_values["temp1"] > 1100:
+            time1 += update_frequency_sec
+        else:
+            time1 = 0
+
+        if time0 > 2:
+            db_connection.set_error_state(
+                0,
+                True,
+                f"Überhitzung! Die Temperatur betrug {temp_values['temp0']}°C. Bitte ersetzen!",
+            )
+
+        if time1 > 2:
+            db_connection.set_error_state(
+                1,
+                True,
+                f"Überhitzung! Die Temperatur betrug {temp_values['temp1']}°C. Bitte ersetzen!",
+            )
+
+        socketio.sleep(update_frequency_sec)
+
+
+def check_tmp_sensor_error_state() -> None:
+    """Überprüft ob die Temperattursensoren einen Fehler haben"""
+    update_frequency_sec = 30
+
+    while True:
+        error_state0, error_msg0 = db_connection.get_error_state(0)
+        error_state1, error_msg1 = db_connection.get_error_state(1)
+
+        if error_state0:
             socketio.emit(
                 "info",
                 {
-                    "msg": f"Achtung die Lebensdauer des Temperatursensors 0 wurde überschritten. Er wurde bereits {int(current_lifespan0 / 60)} Stunden betrieben. Bitte ersetzen!",
+                    "msg": f"Achtung der Temperatursensor 0 hat einen Fehler! Fehlermeldung: {error_msg0}",
                 },
                 broadcast=True,
             )
 
-        if current_lifespan1 > 60 * 100:
+        if error_state1:
             socketio.emit(
                 "info",
                 {
-                    "msg": f"Achtung die Lebensdauer des Temperatursensors 1 wurde überschritten. Er wurde bereits {int(current_lifespan1 / 60)} Stunden betrieben. Bitte ersetzen!",
+                    "msg": f"Achtung der Temperatursensor 1 hat einen Fehler! Fehlermeldung: {error_msg1}",
                 },
                 broadcast=True,
             )
@@ -330,6 +390,7 @@ def reset_temp_sensors():
     """
     data: dict = request.form
     db_connection.update_temp_sensor_tracking(int(data["sensor"]), 0)
+    db_connection.reset_error_state(int(data["sensor"]))
     return Response("Success", status=200)
 
 
@@ -398,7 +459,9 @@ def connected(json: dict):
     """
 
     global UPDATE_DATA_THREAD
-    global TMP_CHECK_THREAD
+    global SENOR_LIFETIME_THREAD
+    global SENSOR_OVERHEAD_THREAD
+    global SENSOR_CHECK_ERROR_THREAD
     global THREAD_STOP_EVENT
     global CONNECTIONS_COUNTER
 
@@ -418,8 +481,14 @@ def connected(json: dict):
             getattr(config, "MESSURE_INTERVAL"),
         )
 
-    if TMP_CHECK_THREAD is None or not TMP_CHECK_THREAD.is_alive():
-        TMP_CHECK_THREAD = socketio.start_background_task(check_temp_runtime)
+    if SENOR_LIFETIME_THREAD is None or not SENOR_LIFETIME_THREAD.is_alive():
+        SENOR_LIFETIME_THREAD = socketio.start_background_task(update_lifetime)
+
+    if SENSOR_OVERHEAD_THREAD is None or not SENSOR_OVERHEAD_THREAD.is_alive():
+        SENSOR_OVERHEAD_THREAD = socketio.start_background_task(check_overheating)
+
+    if SENSOR_CHECK_ERROR_THREAD is None or not SENSOR_CHECK_ERROR_THREAD.is_alive():
+        SENSOR_CHECK_ERROR_THREAD = socketio.start_background_task(check_tmp_sensor_error_state)
 
 
 @socketio.on("disconnect")

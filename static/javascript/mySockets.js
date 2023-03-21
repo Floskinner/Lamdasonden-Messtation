@@ -13,6 +13,8 @@ const MAX_LAMBDA_BELOW_RED = 0.80;
 const MAX_TEMP_ABOVE_ORANGE = 600;
 const MAX_TEMP_ABOVE_RED = 850;
 
+let hinweis_queue = [];
+
 let blinking = undefined;
 let decimalPlaces = undefined;
 
@@ -91,11 +93,20 @@ socket.on("error", (error) => {
 
 socket.on("info", (info) => {
     console.log(info);
+    hinweis_queue.push(info.msg);
 
-    $("#infoModalInfoText").html(info.msg);
+    showAllInfos();
 
-    $('#infoModal').css('display', 'block');
+    // Clear the queue after 5 seconds
+    setTimeout(function () {
+        hinweis_queue = [];
+    } , 5000);
 });
+
+function showAllInfos() {
+    $("#infoModalInfoText").html(hinweis_queue.join("<br>"));
+    $('#infoModal').css('display', 'block');
+}
 
 function updateValuesOnScreen(lamda1, lamda2, afr1, afr2, temp1, temp2) {
     $('#lamda1').html(lamda1.toFixed(decimalPlaces) + " &lambda;");

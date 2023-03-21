@@ -4,6 +4,7 @@ from datetime import timedelta
 from datetime import timezone
 from pathlib import Path
 from typing import Any
+from typing import Tuple
 
 
 class Database:
@@ -27,13 +28,20 @@ class Database:
         timestamp = timestamp_int.isoformat()
         self.execute("INSERT INTO temps VALUES (?, ?, ?)", (sensor_id, timestamp, value))
 
-    def insert_temp_sensor_tracking(self, sensor_id: int, time_run_in_min: int):
+    def insert_temp_sensor_tracking(
+        self, sensor_id: int, time_run_in_min: int, error_state: int = 0, error_message: str = ""
+    ):
         """Fügt einen neuen Sensor mit entsprechender Laufzeit in die Datenbank hinzu.
 
         :param sensor_id: Sensor ID
-        :param time_run_in_min: Laufzeit in Sekunden
+        :param time_run_in_min: Laufzeit in Minuten
+        :param error_state: Fehlerzustand
+        :param error_message: Fehlermeldung
         """
-        self.execute("INSERT INTO temp_sensor_tracking VALUES (?, ?)", (sensor_id, time_run_in_min))
+        self.execute(
+            "INSERT INTO temp_sensor_tracking VALUES (?, ?, ?, ?)",
+            (sensor_id, time_run_in_min, error_state, error_message),
+        )
 
     def insert_lambda_value(self, sensor_id: int, value: float):
         """Fügt einen Lambda-Wert in die Datenbank mit dem Zeitstempel ein.
@@ -51,6 +59,34 @@ class Database:
         :param time_run_in_min: Laufzeit in Minuten
         """
         self.execute("UPDATE temp_sensor_tracking SET time_run_in_min = ? WHERE id = ?", (time_run_in_min, sensor_id))
+
+    def set_error_state(self, sensor_id: int, error_state: int, error_message: str):
+        """Aktualisiert den Fehlerzustand des Sensors.
+
+        :param sensor_id: Sensor ID
+        :param error_state: Fehlerzustand
+        :param error_message: Fehlermeldung
+        """
+        self.execute(
+            "UPDATE temp_sensor_tracking SET error_state = ?, error_msg = ? WHERE id = ?",
+            (error_state, error_message, sensor_id),
+        )
+
+    def get_error_state(self, sensor_id: int) -> Tuple[int, str]:
+        """Gibt den Fehlerzustand des Sensors zurück.
+
+        :param sensor_id: Sensor ID
+        :return: Fehlerzustand
+        """
+        self.cur.execute("SELECT error_state, error_msg FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
+        return self.cur.fetchone()
+
+    def reset_error_state(self, sensor_id: int):
+        """Setzt den Fehlerzustand des Sensors zurück.
+
+        :param sensor_id: Sensor ID
+        """
+        self.execute("UPDATE temp_sensor_tracking SET error_state = 0, error_msg = '' WHERE id = ?", (sensor_id,))
 
     def get_temp_values(self) -> list:
         """Gibt alle Temperaturwerte aus der Datenbank zurück.
@@ -120,7 +156,7 @@ class Database:
 
     def __init_temp_sensor_tracking(self):
         self.execute(
-            "CREATE TABLE IF NOT EXISTS temp_sensor_tracking (id INTEGER PRIMARY KEY, time_run_in_min integer)"
+            'CREATE TABLE IF NOT EXISTS temp_sensor_tracking (id INTEGER PRIMARY KEY, time_run_in_min integer, error_state integer DEFAULT FALSE, error_msg TEXT DEFAULT " ")'  # noqa: E501
         )
 
         try:
