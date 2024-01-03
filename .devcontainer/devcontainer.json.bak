@@ -1,0 +1,31 @@
+{
+    "image": "python:3.7.3",
+    "forwardPorts": [8080],
+    "customizations": {
+      // Configure properties specific to VS Code.
+      "vscode": {
+        // Add the IDs of extensions you want installed when the container is created.
+        "extensions": [
+			"ms-python.python",
+			"njpwerner.autodocstring",
+			"naumovs.color-highlight",
+			"GitHub.copilot",
+			"donjayamanne.githistory",
+			"mhutchie.git-graph",
+			"oderwat.indent-rainbow",
+			"ms-python.vscode-pylance",
+			"Gruntfuggly.todo-tree",
+			"yzhang.markdown-all-in-one",
+			"samuelcolvin.jinjahtml"
+		]
+      }
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers-contrib/features/poetry:1": {}
+	},
+    "remoteEnv": {
+        "FLASK_ENV": "development"
+    },
+	"postCreateCommand": "poetry config virtualenvs.in-project true && poetry install"
+  }

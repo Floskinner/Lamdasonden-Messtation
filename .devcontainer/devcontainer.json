@@ -1,30 +1,41 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-    "image": "python:3.7.3",
-    "forwardPorts": [8080],
-    "customizations": {
-      // Configure properties specific to VS Code.
-      "vscode": {
-        // Add the IDs of extensions you want installed when the container is created.
-        "extensions": [
-			"ms-python.python",
-			"njpwerner.autodocstring",
-			"naumovs.color-highlight",
-			"GitHub.copilot",
-			"donjayamanne.githistory",
-			"mhutchie.git-graph",
-			"oderwat.indent-rainbow",
-			"ms-python.vscode-pylance",
-			"Gruntfuggly.todo-tree",
-			"yzhang.markdown-all-in-one"
-		]
-      }
-	},
+	"name": "Python 3",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/python:3.7",
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers-contrib/features/poetry:1": {}
+		"ghcr.io/devcontainers-contrib/features/poetry:2.0.17": {}
 	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+    "forwardPorts": [8080],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "poetry config virtualenvs.in-project true && poetry install",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-python.python",
+				"njpwerner.autodocstring",
+				"naumovs.color-highlight",
+				"GitHub.copilot",
+				"donjayamanne.githistory",
+				"mhutchie.git-graph",
+				"oderwat.indent-rainbow",
+				"ms-python.vscode-pylance",
+				"Gruntfuggly.todo-tree",
+				"yzhang.markdown-all-in-one",
+				"samuelcolvin.jinjahtml"
+			]
+		}
+	},
+
     "remoteEnv": {
         "FLASK_ENV": "development"
-    },
-	"postCreateCommand": "poetry config virtualenvs.in-project true && poetry install"
-  }
+    }
+}

@@ -1,3 +1,5 @@
+import random
+
 from spidev import SpiDev
 
 
@@ -22,15 +24,21 @@ class MCP3008:
 
 
 class TestMCP3008:
-    def __init__(self):
-        pass
+    def __init__(self, test_summand: int = 1):
+        self.current_value = 0
+        self.summand = test_summand + random.randint(5, 10)
 
     def open(self):
         pass
 
-    def read(self, channel=0):
-        # Lamda 1 = 500
-        return 900
+    def read(self, _):
+        if self.current_value > 1023:
+            self.summand *= -1
+        elif self.current_value < 0:
+            self.summand *= -1
+
+        self.current_value += self.summand
+        return self.current_value
 
     def close(self):
         pass
