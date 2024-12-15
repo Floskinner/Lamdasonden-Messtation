@@ -107,8 +107,13 @@
         if ($("#do_neukalibrierung").prop("checked")) {
             const correction_bank_1 = $("#correction_bank_1").val().replace(",", ".");
             const correction_bank_2 = $("#correction_bank_2").val().replace(",", ".");
-            data["KORREKTURFAKTOR_BANK_1"] = correction_bank_1;
-            data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
+
+            if (correction_bank_1){
+                data["KORREKTURFAKTOR_BANK_1"] = correction_bank_1;
+            }
+            if (correction_bank_2){
+                data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
+            }
         }
 
         // Daten zum Backend senden und speichern
@@ -117,13 +122,15 @@
             url: "/settings",
             data: data,
             statusCode: {
-                400: () => {
-                    alert("Settings not Saved! Please check!");
+                400: (xhr) => {
+                    const response = xhr.responseJSON?.message || "Settings not Saved! Please check!";
+                    alert(response);
                 },
-                200: () => {
-                    alert("Settings Saved!");
+                200: (xhr) => {
+                    const response = xhr.responseJSON?.message || "Settings Saved!";
+                    alert(response);
 
-                    // Daten auf der Seite anpassen #TODO: Abhängikeiten beachten
+                    // Update data on the page #TODO: Consider dependencies
                     blinking = blink;
                     show_values(bank1, bank2, temp1, temp2);
                     decimalPlaces = $("input[name='nachkommastellen']:checked").val();
@@ -141,8 +148,8 @@
             type: "GET",
             url: "/settings",
             success: (data, textStatus, jqXHR) => {
-                $("#correction_bank_1").val(data["CORRECTION_BANK_1"]);
-                $("#correction_bank_2").val(data["CORRECTION_BANK_2"]);
+                $("#correction_bank_1").val(data["KORREKTURFAKTOR_BANK_1"]);
+                $("#correction_bank_2").val(data["KORREKTURFAKTOR_BANK_2"]);
                 $("#blink").prop("checked", data["WARNUNG_BLINKEN"]);
                 $("#bank1-show").prop("checked", data["ANZEIGEN_BANK_1"]);
                 $("#bank2-show").prop("checked", data["ANZEIGEN_BANK_2"]);

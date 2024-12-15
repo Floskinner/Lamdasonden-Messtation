@@ -330,14 +330,14 @@ def update_settings():
     try:
         for key, value in data.items():
             if value == "":
-                return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+                return Response(json.dumps({"message":f"Invalid Value. Value of key {key} is empty"}), status=400, mimetype="application/json")
             config.update_setting(key, value)
     except KeyError as error:
         print(error)
-        return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+        return Response(json.dumps({"message":f"Invalid Key. Key {key} is invalid"}), status=400, mimetype="application/json")
     except Exception as error:
         print(error)
-        return Response("{'message':'Invalid settings'}", status=400, mimetype="application/json")
+        return Response(json.dumps({"message":f"Invalid Settings. {error}"}), status=400, mimetype="application/json")
 
     return Response("Success", status=200)
 
