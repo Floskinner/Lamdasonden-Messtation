@@ -1,8 +1,8 @@
 """Background tasks for sensor data collection and monitoring"""
+
 import time
 import traceback
 
-from mama.config import config
 from mama.models.database import db_connection
 
 

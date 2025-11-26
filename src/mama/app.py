@@ -1,12 +1,14 @@
 """
 Modul das von Gunicorn verwendet wird um den Server zu starten
 """
+
 import os
 import sys
 from threading import Event
 
 from flask import Flask
 from flask_socketio import SocketIO
+
 from mama.config import config
 from mama.routes.api import api_bp
 from mama.routes.main import main_bp

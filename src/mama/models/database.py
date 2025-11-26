@@ -4,7 +4,6 @@ from datetime import timedelta
 from datetime import timezone
 from pathlib import Path
 from typing import Any
-from typing import Tuple
 
 
 class Database:
@@ -72,7 +71,7 @@ class Database:
             (error_state, error_message, sensor_id),
         )
 
-    def get_error_state(self, sensor_id: int) -> Tuple[int, str]:
+    def get_error_state(self, sensor_id: int) -> tuple[int, str]:
         """Gibt den Fehlerzustand des Sensors zurück.
 
         :param sensor_id: Sensor ID

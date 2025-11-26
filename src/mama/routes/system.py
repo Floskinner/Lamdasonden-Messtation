@@ -1,6 +1,8 @@
 """System information routes"""
+
 from flask import Blueprint
 from flask import render_template
+
 from mama.utils import raspi_status as pi
 
 system_bp = Blueprint("system", __name__)

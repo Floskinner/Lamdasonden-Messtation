@@ -1,6 +1,7 @@
 """
 Infos über den Pi bekommen
 """
+
 import platform
 import socket
 
@@ -54,7 +55,7 @@ def get_hotname_ip() -> str:
         host_name = socket.gethostname()
 
         return host_name
-    except (IOError) as error:
+    except IOError as error:
         print(f"Error: {error}")
         return "Error"
 

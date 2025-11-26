@@ -1,9 +1,11 @@
 """Settings and configuration routes"""
+
 import json
 
 from flask import Blueprint
 from flask import request
 from flask import Response
+
 from mama.config import config
 
 settings_bp = Blueprint("settings", __name__)

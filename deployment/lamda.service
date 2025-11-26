@@ -8,7 +8,7 @@ User=root
 Type=simple
 Restart=always
 WorkingDirectory=/home/pi/lamdaProjekt
-Environment="PATH=/home/pi/lamdaProjekt/venv/bin"
+Environment="PATH=/home/pi/lamdaProjekt/.venv/bin"
 ExecStart=/home/pi/lamdaProjekt/.venv/bin/gunicorn -c deployment/gunicorn.conf.py mama.app:app
 
 [Install]

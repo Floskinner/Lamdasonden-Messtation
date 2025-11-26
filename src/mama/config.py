@@ -1,10 +1,11 @@
 """
 Hier weden grundelgende Einstellungen / Variablen definiert, die im ganzen Programm verwendet werden
 """
+
 import json
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Any
 
 # Get the project root directory (3 levels up from this file)
 _project_root = Path(__file__).parent.parent.parent
@@ -15,13 +16,13 @@ setting_path = (
 )
 
 
-def read_settings(file_path: Path) -> Dict:
+def read_settings(file_path: Path) -> dict:
     with file_path.open(mode="r", encoding="utf8") as file:
         settings = json.load(file)
     return settings
 
 
-def save_settings(file_path: Path, values: Dict) -> None:
+def save_settings(file_path: Path, values: dict) -> None:
     with file_path.open(mode="w", encoding="utf8") as file:
         json.dump(values, file, indent=4, sort_keys=True)
 
@@ -36,7 +37,7 @@ class Config:
         for name, value in settings.items():
             setattr(self, name, value)
 
-    def update_setting(self, name: str, value: any):
+    def update_setting(self, name: str, value: Any):
         """Aktualisiert eine Einstellung
 
         :param name: Name der Einstellung
@@ -47,7 +48,7 @@ class Config:
         save_settings(setting_path, settings)
         self.__load_settings()
 
-    def get_settings(self) -> Dict:
+    def get_settings(self) -> dict:
         """Gibt die aktuellen Einstellungen zurück
 
         :return: Dict mit den Einstellungen als Inhalt.
