@@ -1,8 +1,16 @@
 from mama.config import config
-from mama.sensors.gpio import GPIO
+from mama.sensors.gpio import ADC, TestMCP3008
+from dataclasses import dataclass
 
 
-class LambdaSensor(GPIO):
+@dataclass
+class LamdaData:
+    lamda: float
+    afr: float
+    volt: float
+
+
+class LambdaSensor(ADC):
     """
     Klasse womit der Aktuelle Lamdawert am GPIO Einglang ausgelesen werden kann
     """
@@ -15,7 +23,11 @@ class LambdaSensor(GPIO):
         super().__init__()
         self.channel = channel
 
-    def calculate_lamda(self, voltage: float, correction: float) -> float:
+        if isinstance(self.adc, TestMCP3008):
+            self.adc = TestMCP3008(min_value=0, max_value=1023)
+
+    @staticmethod
+    def calculate_lamda(voltage: float, correction: float) -> float:
         """Gibt den aktuellen Lamdawert zurück
 
         :param voltage: Spannungswert des Lambda Sensors (0-5V)
@@ -34,17 +46,13 @@ class LambdaSensor(GPIO):
         afr = lamda * getattr(config, "AFR_STOCH")
         return afr
 
-    def get_data(self) -> dict:
+    def get_data(self) -> LamdaData:
         """Gibt den aktuellen Lamdawert, den aktuellen AFR Wert und den aktuellen Spannungswert zurück
 
         :return: Aktueller Lamdawert, Aktueller AFR Wert und Aktueller Spannungswert
         """
         voltage = self.get_voltage(self.channel)
-        lamda = self.calculate_lamda(voltage, getattr(config, "KORREKTURFAKTOR_BANK_1"))
+        lamda = LambdaSensor.calculate_lamda(voltage, getattr(config, "KORREKTURFAKTOR_BANK_1"))
         afr = self.get_afr(lamda)
-        data = {
-            "lamda": lamda,
-            "afr": afr,
-            "volt": voltage,
-        }
-        return data
+
+        return LamdaData(lamda=lamda, afr=afr, volt=voltage)

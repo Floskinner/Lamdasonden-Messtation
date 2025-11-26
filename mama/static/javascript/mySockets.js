@@ -24,39 +24,18 @@ socket.on('connect', function () {
     socket.emit('connected', {
         data: browserTime
     });
-
 });
 
 socket.on("connect_error", (error) => {
-    console.log("Error connecting to server: " + error);
+    // Connection error handling - reconnection is automatic
 });
 
 socket.on("disconnect", (reason) => {
-    console.log("Disconnected from server: " + reason);
     if (reason === "io server disconnect") {
         // the disconnection was initiated by the server, you need to reconnect manually
         socket.connect();
     }
     // else the socket will automatically try to reconnect
-});
-
-socket.on("connect_error", (error) => {
-    console.log("Error connecting to server: " + error);
-});
-
-socket.on("disconnect", (reason) => {
-    console.log("Disconnected from server: " + reason);
-    if (reason === "io server disconnect") {
-        // the disconnection was initiated by the server, you need to reconnect manually
-        socket.connect();
-    }
-    // else the socket will automatically try to reconnect
-});
-
-socket.on('disconnect', function () {
-    socket.emit('disconnect', {
-        data: 'User Disconnected'
-    });
 });
 
 

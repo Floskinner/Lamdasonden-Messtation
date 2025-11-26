@@ -4,22 +4,22 @@ from mama.sensors.mcp3008 import MCP3008
 from mama.sensors.mcp3008 import TestMCP3008
 
 
-class GPIO(object):
-    """Basis Klasse für die GPIO Schnittstelle"""
+class ADC(object):
+    """Base class for the ADC interface"""
 
-    def __init__(self, *args, **kwargs):
-        """Handelt es sich um eine Testumgebung wird ein TestMCP3008 Objekt erstellt, ansonsten ein MCP3008 Objekt"""
+    def __init__(self, bus: int = 0, device: int = 0):
+        """If it is a test environment, a TestMCP3008 object is created, otherwise an MCP3008 object"""
         if os.environ.get("FLASK_ENV") == "development":
             print("Create TestMCP3008 Object")
-            self.adc = TestMCP3008(*args, **kwargs)
+            self.adc = TestMCP3008(bus, device)
         else:
-            self.adc = MCP3008(*args, **kwargs)
+            self.adc = MCP3008(bus, device)
 
     def get_voltage(self, channel: int) -> float:
-        """Gibt den Spannungswert des angegebenen Kanals zurück
+        """Returns the voltage value of the specified channel
 
-        :param channel: Kanalnummer (0-7)
-        :return: Spannungswert (0-5V)
+        :param channel: Channel of the ADC (0-7)
+        :return: Voltage value (0-5V)
         """
         value = self.adc.read(channel)
         voltage = value / 1023.0 * 5.0

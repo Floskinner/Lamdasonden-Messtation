@@ -14,7 +14,7 @@ from mama.routes.api import api_bp
 from mama.routes.main import main_bp
 from mama.routes.settings import settings_bp
 from mama.routes.system import system_bp
-from mama.sensors.lambda_sensor import LambdaSensor
+from mama.sensors.lamda_sensor import LambdaSensor
 from mama.sensors.temp_sensor import TypKTemperaturSensor
 from mama.tasks import background
 
@@ -53,11 +53,10 @@ IS_RECORDING = False
 
 
 def write_to_systemd(message: str):
-    """Übergebene Nachrichten werden auf die Konsole ausgegeben mit print und anschließend
-    erfolgt sys.stdout.flush(). Dadurch werden alle Ausgaben direkt in die systemd Logs eingetragen
+    """print message and flush stdout to force the system to write the log immediately
 
     Args:
-        message (str): Nachricht welche auf der Konsole / systemd Log erscheinen soll
+        message (str): Message to be printed
     """
     print(message)
     sys.stdout.flush()
@@ -70,12 +69,11 @@ def get_is_recording():
 
 @socketio.on("connected")
 def connected(json: dict):
-    """Sobald eine Verbindung mit dem Socket aufgebaut wird, startet die Methode den Thread für das
-    updaten der Daten. Zudem setzt sie die Systemzeit gleich der Browserzeit,
-    damit beim aufzeichnen der Daten die richtigen Uhrzeiten verwendet werden
+    """When a socket connection is established this handler starts the data update thread.
+    It also sets the system time to the browser time so recorded data uses correct timestamps.
 
     Args:
-        json (dict): Key ["data"] welcher die Uhrzeit als ISO 8601 String enthält
+        json (dict): Key ["data"] containing the time as an ISO 8601 string
     """
 
     global UPDATE_DATA_THREAD
@@ -90,6 +88,8 @@ def connected(json: dict):
     if os.environ.get("FLASK_ENV") != "development":
         time_befehl = "/usr/bin/date -s " + str(date_string)
         os.system(time_befehl)
+    else:
+        write_to_systemd("Development mode: Skipping setting system time")
 
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1

@@ -113,11 +113,11 @@ gunicorn -c deployment/gunicorn.conf.py mama.app:app
 ### Logging
 Uses `write_to_systemd()` helper which calls `print()` + `sys.stdout.flush()` for immediate systemd journal output. **Do not use standard logging module**.
 
-### German Naming
-Many variables/comments use German terms:
+### Naming
+Translate all found German terms to English. Take care of these specific terms:
 - `lamda` (not lambda - reserved keyword)
-- `TEMPERATUR0_CHANNEL`, `MESSURE_INTERVAL`, `NACHKOMMASTELLEN` (decimal places)
-- Database column names and docstrings in German
+- use ASCII quotes (`"`) for strings, not German-style quotes (`„“`)
+- use ASCII characters only in code (no umlauts or unicode)
 
 ### Sensor Sampling Pattern
 Lambda sensors use **averaged sampling**: collect N readings at `MESSURE_INTERVAL` rate, return mean to reduce noise. See `background.get_lamda_values()`.

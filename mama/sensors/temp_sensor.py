@@ -1,41 +1,48 @@
-from typing import Tuple
+from dataclasses import dataclass
 
-from mama.sensors.gpio import GPIO
+from mama.sensors.gpio import ADC, TestMCP3008
 
 
-class TypKTemperaturSensor(GPIO):
-    """Klasse womit der Temperaturwert am GPIO Einglang ausgelesen werden kann.
-    Als Sensor wird ein Typ K Temperatursensor verwendet.
-    Referenz: https://www.sensorshop24.de/kabelthermoelement-mit-nicr-ni-typ-k-durchmesser-6mm
+@dataclass
+class TempData:
+    temp: float
+    volt: float
+
+
+class TypKTemperaturSensor(ADC):
+    """Class to read temperature values from a GPIO input.
+    Uses a Type-K thermocouple sensor.
+    Reference: https://www.sensorshop24.de/kabelthermoelement-mit-nicr-ni-typ-k-durchmesser-6mm
     """
 
     def __init__(self, channel: int):
-        """Klasse womit der Temperaturwert am ADC Einglang ausgelesen werden kann.
+        """Class to read temperature values from an ADC input.
 
-        :param channel: ADC Pin an dem der Temperatursensor angeschlossen ist
+        :param channel: ADC pin to which the temperature sensor is connected
         """
-        super().__init__(test_summand=100)
+        # TODO: Remove the following line when the implementation is complete
+        self.adc = TestMCP3008(min_value=0, max_value=1023)
         self.channel = channel
 
     @staticmethod
     def calculate_temp(voltage: float) -> int:
-        """Gibt die Temperatur in Grad Celsius zurück
+        """Returns the temperature in degrees Celsius.
 
-        :param voltage: Spannungswert des Typ K Temperatursensors (0-5V)
-        :return: Temperatur in Grad Celsius (0-1360°C)
+        :param voltage: Voltage from the Type-K thermocouple (0-5V)
+        :return: Temperature in degrees Celsius (0-1360°C)
         """
-        # Formel für die Umrechnung von Spannung in Grad Celsius
-        # Referenz: https://www.turbozentrum.de/turbozentrum/pdf/Anleitungen/EGT-DE_mit_CANchecked_Info.pdf
+        # Conversion formula from voltage to degrees Celsius
+        # Reference: https://www.turbozentrum.de/turbozentrum/pdf/Anleitungen/EGT-DE_mit_CANchecked_Info.pdf
         # T [C] = 250 * OUT [V]
         temp = int(250 * voltage)
         return temp
 
-    def get_temp(self) -> Tuple[int, float]:
-        """Gibt die Temperatur in Grad Celsius zurück
+    def get_data(self) -> TempData:
+        """Returns the temperature in degrees Celsius.
 
-        :param channel: GPIO Pin an dem der Temperatursensor angeschlossen ist
-        :return: Temperatur in Grad Celsius (0-1360°C) und Spannungswert (0-5V)
+        :param channel: GPIO pin to which the temperature sensor is connected
+        :return: Temperature in degrees Celsius (0-1360°C) and voltage (0-5V)
         """
         voltage = self.get_voltage(self.channel)
         temp = self.calculate_temp(voltage)
-        return (temp, voltage)
+        return TempData(temp=temp, volt=voltage)

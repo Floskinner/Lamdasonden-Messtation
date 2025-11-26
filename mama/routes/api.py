@@ -13,9 +13,9 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.route("/tempdata", methods=["GET"])
 def get_temp_data_between():
-    """Gibt Temperaturdaten zwischen zwei Zeitpunkten zurück
+    """Returns temperature data between two timestamps
 
-    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    :return: Response with status code 200 if successful. 400 if an error occurred.
     """
     data: dict = request.args
     try:
@@ -34,9 +34,9 @@ def get_temp_data_between():
 
 @api_bp.route("/reset_temp_sensors", methods=["POST"])
 def reset_temp_sensors():
-    """Setzt die Lebensdauer der Temperatursensoren zurück
+    """Resets the lifespan of the temperature sensors
 
-    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    :return: Response with status code 200 if successful. 400 if an error occurred.
     """
     data: dict = request.form
     db_connection.update_temp_sensor_tracking(int(data["sensor"]), 0)
@@ -46,9 +46,8 @@ def reset_temp_sensors():
 
 @api_bp.route("/lambdadata", methods=["GET"])
 def get_lambda_data_between():
-    """Gibt Lambdadaten zwischen zwei Zeitpunkten zurück
-
-    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
+    """Returns lambda data between two timestamps
+    :return: Response with status code 200 if successful. 400 if an error occurred.
     """
     data: dict = request.args
     try:
