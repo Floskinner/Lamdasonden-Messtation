@@ -1,7 +1,7 @@
 import os
 
-from MCP3008 import MCP3008
-from MCP3008 import TestMCP3008
+from mama.sensors.mcp3008 import MCP3008
+from mama.sensors.mcp3008 import TestMCP3008
 
 
 class GPIO(object):

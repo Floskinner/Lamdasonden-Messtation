@@ -3,7 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 
-from database import db_connection
+from mama.models.database import db_connection
 
 
 def generate_temp_data():

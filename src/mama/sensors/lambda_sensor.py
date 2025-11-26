@@ -1,5 +1,5 @@
-from globale_variablen import config
-from GPIO import GPIO
+from mama.config import config
+from mama.sensors.gpio import GPIO
 
 
 class LambdaSensor(GPIO):

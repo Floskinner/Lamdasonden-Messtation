@@ -181,4 +181,6 @@ class Database:
         self.execute("DELETE FROM lambda WHERE timestamp < ?", (older_than_str,))
 
 
-db_connection = Database(Path("MAMA.sqlite"))
+# Get the project root directory (4 levels up from this file)
+_project_root = Path(__file__).parent.parent.parent.parent
+db_connection = Database(_project_root / "MAMA.sqlite")

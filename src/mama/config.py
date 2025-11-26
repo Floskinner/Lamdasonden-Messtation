@@ -6,7 +6,13 @@ import os
 from pathlib import Path
 from typing import Dict
 
-setting_path = Path("settings_example.json") if os.environ.get("FLASK_ENV") == "development" else Path("settings.json")
+# Get the project root directory (3 levels up from this file)
+_project_root = Path(__file__).parent.parent.parent
+setting_path = (
+    _project_root / "settings_example.json"
+    if os.environ.get("FLASK_ENV") == "development"
+    else _project_root / "settings.json"
+)
 
 
 def read_settings(file_path: Path) -> Dict:

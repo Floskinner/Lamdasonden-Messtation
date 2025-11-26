@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from GPIO import GPIO
+from mama.sensors.gpio import GPIO
 
 
 class TypKTemperaturSensor(GPIO):

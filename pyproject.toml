@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "mama"
 version = "1.0.1"
-description = ""
+description = "Lambda Sensor Measurement Station"
 authors = ["Florian Glaser <58706771+Floskinner@users.noreply.github.com>"]
+packages = [{include = "mama", from = "src"}]
+
+[tool.poetry.scripts]
+mama = "mama.app:main"
 
 [tool.poetry.dependencies]
 python = "3.7.*"
