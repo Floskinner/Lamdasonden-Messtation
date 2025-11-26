@@ -9,7 +9,6 @@ from typing import Any
 class Database:
     def __init__(self, db_file: Path):
         self.conn = sqlite3.connect(db_file, check_same_thread=False)
-        self.cur = self.conn.cursor()
         self.__init_temp_values()
         self.__init_temp_sensor_tracking()
         self.__init_lambda_values()
@@ -77,8 +76,11 @@ class Database:
         :param sensor_id: Sensor ID
         :return: Fehlerzustand
         """
-        self.cur.execute("SELECT error_state, error_msg FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
-        return self.cur.fetchone()
+        cur = self.conn.cursor()
+        cur.execute("SELECT error_state, error_msg FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
+        result = cur.fetchone()
+        cur.close()
+        return result
 
     def reset_error_state(self, sensor_id: int):
         """Setzt den Fehlerzustand des Sensors zurück.
@@ -92,8 +94,11 @@ class Database:
 
         :return: Temperaturwerte
         """
-        self.cur.execute("SELECT * FROM temps")
-        return self.cur.fetchall()
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM temps")
+        result = cur.fetchall()
+        cur.close()
+        return result
 
     def get_temp_values_between(self, start: str, end: str) -> list:
         """Gibt alle Temperaturwerte aus der Datenbank zwischen zwei Zeitpunkten zurück.
@@ -116,16 +121,22 @@ class Database:
 
         :return: Laufzeit des Sensors
         """
-        self.cur.execute("SELECT time_run_in_min FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
-        return self.cur.fetchone()
+        cur = self.conn.cursor()
+        cur.execute("SELECT time_run_in_min FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
+        result = cur.fetchone()
+        cur.close()
+        return result
 
     def get_lambda_values(self) -> list:
         """Gibt alle Lambda-Werte aus der Datenbank zurück.
 
         :return: Lambda-Werte
         """
-        self.cur.execute("SELECT * FROM lambda")
-        return self.cur.fetchall()
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM lambda")
+        result = cur.fetchall()
+        cur.close()
+        return result
 
     def get_lambda_values_between(self, start: str, end: str) -> list:
         """Gibt alle Lambda-Werte aus der Datenbank zwischen zwei Zeitpunkten zurück.
@@ -144,8 +155,10 @@ class Database:
         ]
 
     def execute(self, query: str, args: tuple = ()):
-        self.cur.execute(query, args)
+        cur = self.conn.cursor()
+        cur.execute(query, args)
         self.conn.commit()
+        cur.close()
 
     def __del__(self):
         self.conn.close()
@@ -181,5 +194,5 @@ class Database:
 
 
 # Get the project root directory (4 levels up from this file)
-_project_root = Path(__file__).parent.parent.parent.parent
+_project_root = Path(__file__).parent.parent.parent
 db_connection = Database(_project_root / "MAMA.sqlite")

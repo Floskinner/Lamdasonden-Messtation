@@ -86,8 +86,10 @@ def connected(json: dict):
     global CONNECTIONS_COUNTER
 
     date_string = json["data"]
-    time_befehl = "/usr/bin/date -s " + str(date_string)
-    os.system(time_befehl)
+
+    if os.environ.get("FLASK_ENV") != "development":
+        time_befehl = "/usr/bin/date -s " + str(date_string)
+        os.system(time_befehl)
 
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1

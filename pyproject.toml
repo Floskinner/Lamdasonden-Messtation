@@ -3,7 +3,7 @@ name = "mama"
 version = "2.0.0"
 description = "Lambda Sensor Measurement Station"
 authors = ["Florian Glaser <58706771+Floskinner@users.noreply.github.com>"]
-packages = [{include = "mama", from = "src"}]
+packages = [{include = "mama"}]
 
 [tool.poetry.scripts]
 mama = "mama.app:main"

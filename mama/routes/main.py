@@ -7,6 +7,8 @@ from flask import render_template
 
 from mama.config import config
 
+# No need to import template directories; Flask resolves by name
+
 main_bp = Blueprint("main", __name__)
 
 

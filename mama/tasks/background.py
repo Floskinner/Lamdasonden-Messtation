@@ -117,7 +117,7 @@ def update_data(
                 "temp2_voltage": temp_values["temp1_voltage"],
             }
 
-            socketio.emit("newValues", data, broadcast=True)
+            socketio.emit("newValues", data)
 
             # Ohne warten wird emit nicht zuverlässig durchgeführt
             socketio.sleep(0)
@@ -140,7 +140,6 @@ def update_data(
                 "exc": traceback.format_exc().splitlines()[-1],
                 "traceback": traceback.format_exc(),
             },
-            broadcast=True,
         )
     except Exception:
         socketio.emit(
@@ -150,7 +149,6 @@ def update_data(
                 "exc": traceback.format_exc().splitlines()[-1],
                 "traceback": traceback.format_exc(),
             },
-            broadcast=True,
         )
 
 
@@ -253,7 +251,6 @@ def check_tmp_sensor_error_state(socketio) -> None:
                 {
                     "msg": f"Achtung der Temperatursensor 0 hat einen Fehler! Fehlermeldung: {error_msg0}",
                 },
-                broadcast=True,
             )
 
         if error_state1:
@@ -262,7 +259,6 @@ def check_tmp_sensor_error_state(socketio) -> None:
                 {
                     "msg": f"Achtung der Temperatursensor 1 hat einen Fehler! Fehlermeldung: {error_msg1}",
                 },
-                broadcast=True,
             )
 
         socketio.sleep(update_frequency_sec)

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 # Get the project root directory (3 levels up from this file)
-_project_root = Path(__file__).parent.parent.parent
+_project_root = Path(__file__).parent.parent
 setting_path = (
     _project_root / "settings_example.json"
     if os.environ.get("FLASK_ENV") == "development"
