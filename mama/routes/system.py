@@ -1,5 +1,6 @@
 """System information routes"""
 
+import datetime
 from flask import Blueprint
 from flask import render_template
 
@@ -26,6 +27,7 @@ def system():
         "os_disk_used": pi.get_disk_info().get("used"),
         "os_disk_free": pi.get_disk_info().get("free"),
         "os_disk_free_percent": pi.get_disk_info().get("percent"),
+        "current_year": datetime.datetime.now().year,
     }
 
     return render_template("system.jinja", **system_data)

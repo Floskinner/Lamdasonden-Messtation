@@ -26,7 +26,7 @@ def get_cpu_temp() -> float:
     """
 
     data_temp = psutil.sensors_temperatures()
-    cpu_temp = data_temp["cpu_thermal"][0][1]
+    cpu_temp = data_temp.get("cpu_thermal", ((0, 0),))[0][1]
     cpu_temp = round(cpu_temp, 2)
 
     return cpu_temp

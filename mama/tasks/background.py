@@ -1,5 +1,6 @@
 """Background tasks for sensor data collection and monitoring"""
 
+from datetime import datetime, timedelta
 import time
 import traceback
 from dataclasses import dataclass
@@ -45,8 +46,7 @@ def get_lamda_values(
     Returns:
         AveragedLamdaValues: Averaged lambda values from both sensors
     """
-    if number_of_lamda_values <= 0:
-        raise ValueError("number_of_lamda_values must be greater than 0")
+    assert number_of_lamda_values > 0, "number_of_lamda_values must be greater than 0"
 
     # Collect samples
     lamda1_samples = []
@@ -144,10 +144,10 @@ def update_data(
             # without sleep, the emit does not work properly
             # socketio.sleep(0.1)
 
-            if temp_values.temp0 > 100:
+            if temp_values.temp0 > 100 and is_recording_func():
                 db_connection.insert_temp_value(0, temp_values.temp0)
 
-            if temp_values.temp1 > 100:
+            if temp_values.temp1 > 100 and is_recording_func():
                 db_connection.insert_temp_value(1, temp_values.temp1)
 
             if is_recording_func():
@@ -175,18 +175,21 @@ def update_data(
 
 
 def update_lifetime(socketio, sensors) -> None:
-    """Aktuallisiert die Lebenszeit der Sensoren
+    """Updates the lifespan of the temperature sensors in the database.
+    Only increases the lifespan if the temperature is over 100°C.
 
     :param socketio: SocketIO instance
     :param sensors: Dictionary containing all sensor instances
     """
     update_frequency_sec = 60
 
+    # Do not add any stop event here, we always want to check for overheating
+    # even if no user is connected to the web interface
     while True:
         temp_values = get_temp_values(sensors["temp0"], sensors["temp1"])
 
-        current_lifespan0 = db_connection.get_temp_sensor_tracking(0)[0]
-        current_lifespan1 = db_connection.get_temp_sensor_tracking(1)[0]
+        current_lifespan0 = db_connection.get_temp_sensor_tracking(0)
+        current_lifespan1 = db_connection.get_temp_sensor_tracking(1)
 
         if temp_values.temp0 > 100:
             current_lifespan0 += int(update_frequency_sec / 60)
@@ -221,32 +224,36 @@ def check_overheating(socketio, sensors) -> None:
     :param socketio: SocketIO instance
     :param sensors: Dictionary containing all sensor instances
     """
+    start_time0 = datetime.now()
+    start_time1 = datetime.now()
 
-    update_frequency_sec = 2
-    time0 = 0
-    time1 = 0
+    update_frequency_sec = 1
 
+    # Do not add any stop event here, we always want to check for overheating
+    # even if no user is connected to the web interface
     while True:
         temp_values = get_temp_values(sensors["temp0"], sensors["temp1"])
 
         if temp_values.temp0 > 1100:
-            time0 += update_frequency_sec
+            time0 = datetime.now() - start_time0
         else:
-            time0 = 0
+            start_time0 = datetime.now()
+            time0 = timedelta(seconds=0)
 
         if temp_values.temp1 > 1100:
-            time1 += update_frequency_sec
+            time1 = datetime.now() - start_time1
         else:
-            time1 = 0
+            start_time1 = datetime.now()
+            time1 = timedelta(seconds=0)
 
-        if time0 > 2:
+        if time0 > timedelta(seconds=2):
             db_connection.set_error_state(
                 0,
                 True,
                 f"Überhitzung! Die Temperatur betrug {temp_values.temp0}°C. Bitte ersetzen!",
             )
 
-        if time1 > 2:
+        if time1 > timedelta(seconds=2):
             db_connection.set_error_state(
                 1,
                 True,

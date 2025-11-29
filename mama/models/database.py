@@ -125,7 +125,7 @@ class Database:
         cur.execute("SELECT time_run_in_min FROM temp_sensor_tracking WHERE id = ?", (sensor_id,))
         result = cur.fetchone()
         cur.close()
-        return result
+        return result[0]
 
     def get_lambda_values(self) -> list:
         """Gibt alle Lambda-Werte aus der Datenbank zurück.

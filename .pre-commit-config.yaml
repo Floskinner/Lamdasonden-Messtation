@@ -4,14 +4,16 @@ repos:
   hooks:
     - id: check-yaml
     - id: end-of-file-fixer
-      types:
-        - "python"
+    - id: check-executables-have-shebangs
     - id: trailing-whitespace
-      types:
-        - "python"
+    - id: check-json
+    - id: check-shebang-scripts-are-executable
+    - id: debug-statements
+    - id: detect-private-key
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.14.6
   hooks:
     - id: ruff
       args: [--fix]
     - id: ruff-format
+    - id: ruff-check
