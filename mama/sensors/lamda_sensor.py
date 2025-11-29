@@ -15,13 +15,15 @@ class LambdaSensor(ADC):
     Klasse womit der Aktuelle Lamdawert am GPIO Einglang ausgelesen werden kann
     """
 
-    def __init__(self, channel: int):
+    def __init__(self, channel: int, correction_factor_key: str = "KORREKTURFAKTOR_BANK_1"):
         """Klasse womit der Aktuelle Lamdawert am GPIO Einglang ausgelesen werden kann
 
         :param channel: ADC Pin an dem der Lambda Sensor angeschlossen ist
+        :param correction_factor_key: Korrekturfaktor für den Lamdawert
         """
         super().__init__()
         self.channel = channel
+        self.correction_factor_key = correction_factor_key
 
         if isinstance(self.adc, TestMCP3008):
             self.adc = TestMCP3008(min_value=0, max_value=1023)
@@ -52,7 +54,7 @@ class LambdaSensor(ADC):
         :return: Aktueller Lamdawert, Aktueller AFR Wert und Aktueller Spannungswert
         """
         voltage = self.get_voltage(self.channel)
-        lamda = LambdaSensor.calculate_lamda(voltage, getattr(config, "KORREKTURFAKTOR_BANK_1"))
+        lamda = LambdaSensor.calculate_lamda(voltage, getattr(config, self.correction_factor_key))
         afr = self.get_afr(lamda)
 
         return LamdaData(lamda=lamda, afr=afr, volt=voltage)

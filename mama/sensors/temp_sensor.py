@@ -21,7 +21,7 @@ class TypKTemperaturSensor(ADC):
         :param channel: ADC pin to which the temperature sensor is connected
         """
         # TODO: Remove the following line when the implementation is complete
-        self.adc = TestMCP3008(min_value=0, max_value=1023)
+        self.adc = TestMCP3008(min_value=0, max_value=800)
         self.channel = channel
 
     @staticmethod

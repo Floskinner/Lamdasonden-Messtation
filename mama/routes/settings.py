@@ -13,10 +13,6 @@ settings_bp = Blueprint("settings", __name__)
 
 @settings_bp.route("/settings", methods=["POST"])
 def update_settings():
-    """Update der Einstellungen
-
-    :return: Response mit Statuscode 200 wenn erfolgreich. 400 wenn Fehler aufgetreten ist.
-    """
     data: dict = request.form
     try:
         for key, value in data.items():
@@ -41,8 +37,4 @@ def update_settings():
 
 @settings_bp.route("/settings", methods=["GET"])
 def get_settings():
-    """Gibt die aktuellen Einstellungen zurück
-
-    :return: Response mit Statuscode 200 wenn erfolgreich. JSON mit den Einstellungen als Inhalt.
-    """
     return config.get_settings()

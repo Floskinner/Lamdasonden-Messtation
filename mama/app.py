@@ -29,10 +29,10 @@ app.register_blueprint(settings_bp)
 app.register_blueprint(system_bp)
 
 # Initialize sensors
-LAMDA_SENSOR0 = LambdaSensor(getattr(config, "LAMDA0_CHANNEL"))
-LAMDA_SENSOR1 = LambdaSensor(getattr(config, "LAMDA1_CHANNEL"))
-TEMP_SENSOR0 = TypKTemperaturSensor(getattr(config, "TEMPERATUR0_CHANNEL"))
-TEMP_SENSOR1 = TypKTemperaturSensor(getattr(config, "TEMPERATUR1_CHANNEL"))
+LAMDA_SENSOR0 = LambdaSensor(channel=getattr(config, "LAMDA0_CHANNEL"), correction_factor_key="KORREKTURFAKTOR_BANK_1")
+LAMDA_SENSOR1 = LambdaSensor(channel=getattr(config, "LAMDA1_CHANNEL"), correction_factor_key="KORREKTURFAKTOR_BANK_2")
+TEMP_SENSOR0 = TypKTemperaturSensor(channel=getattr(config, "TEMPERATUR0_CHANNEL"))
+TEMP_SENSOR1 = TypKTemperaturSensor(channel=getattr(config, "TEMPERATUR1_CHANNEL"))
 
 SENSORS = {
     "lamda0": LAMDA_SENSOR0,

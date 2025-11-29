@@ -56,7 +56,7 @@
             <label>Neukalibrierung? </label><input id="do_neukalibrierung" class="w3-check" type="checkbox"
                 onchange=toggle_correction()><br>
             <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
-                verändert werden !!!"</p>
+                verändert werden !!!</br>Stelle sicher, dass ein geeignetes Messgerät verwendet wird.</p>
             <br>
             <label>Bank 1 &#128993</label><br>
             <input id="correction_bank_1" class="w3-input" style="width:30%" type="text"
@@ -114,6 +114,10 @@
             if (correction_bank_2){
                 data["KORREKTURFAKTOR_BANK_2"] = correction_bank_2;
             }
+
+            // Reset the checkbox
+            $("#do_neukalibrierung").prop("checked", false);
+            toggle_correction();
         }
 
         // Daten zum Backend senden und speichern
