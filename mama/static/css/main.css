@@ -28,19 +28,44 @@ input {
 
 .w3-modal-content {
   background-color: var(--main-color-light);
-  height: 80%;
+  max-height: 85%;
+  max-width: 95%;
+  margin: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modalHeaderFooter {
   background-color: var(--main-color-dark);
   color: white;
-  height: 80%;
-  height: fit-content;
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+}
+
+.modalHeaderFooter h3 {
+  margin: 0.3rem 0;
+  font-size: 1.2rem;
 }
 
 .modalBody {
   overflow-y: auto;
-  height: inherit
+  flex: 1;
+  padding: 0.75rem 1rem;
+}
+
+.modalBody h4 {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.modalBody label {
+  font-size: 0.9rem;
+}
+
+.modalBody input[type="text"] {
+  font-size: 0.9rem;
+  padding: 0.3rem;
 }
 
 .base-grid {
@@ -113,18 +138,6 @@ input {
 
   .mybackround.hidden {
     background-image: none;
-  }
-
-  .bank {
-    font-size: 2vw;
-  }
-
-  .lamda {
-    font-size: 8vw;
-  }
-
-  .afr {
-    font-size: 3.5vw;
   }
 }
 

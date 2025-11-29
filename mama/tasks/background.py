@@ -142,7 +142,7 @@ def update_data(
             socketio.emit("newValues", data)
 
             # without sleep, the emit does not work properly
-            socketio.sleep(0.1)
+            # socketio.sleep(0.1)
 
             if temp_values.temp0 > 100:
                 db_connection.insert_temp_value(0, temp_values.temp0)

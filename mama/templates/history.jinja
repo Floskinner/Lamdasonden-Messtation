@@ -32,17 +32,18 @@
     </div>
 
     <div class="hfooter">
-        <label style="grid-area: tl1;">Von</label>
-        <input id="start_date" type="date" style="grid-area: tl2;">
-        <input id="start_time" type="time" style="grid-area: tl3;">
-
-        <label style="grid-area: bl1;">Bis</label>
-        <input id="end_date" type="date" style="grid-area: bl2;">
-        <input id="end_time" type="time" style="grid-area: bl3;">
-
+        <div class="date-row">
+            <label>Von</label>
+            <input id="start_date" type="date">
+            <input id="start_time" type="time">
+        </div>
+        <div class="date-row">
+            <label>Bis</label>
+            <input id="end_date" type="date">
+            <input id="end_time" type="time">
+        </div>
         <button type="button" class="w3-button w3-round-large w3-border w3-green"
             onclick="set_history()">Anzeigen</button>
-
     </div>
 
 </div>
