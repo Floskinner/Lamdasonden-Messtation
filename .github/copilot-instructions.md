@@ -54,14 +54,14 @@ Tables: `temps`, `lambda_values`, `temp_sensor_tracking`
 
 ### Local Development Setup
 ```bash
-# Install dependencies (uses Poetry)
-poetry install
+# Install dependencies (uses uv)
+uv add
 
 # Set development environment
 export FLASK_ENV=development
 
 # Run directly (development server on port 8080)
-poetry run mama
+uv run mama
 
 # Run with Gunicorn (production-like)
 gunicorn -c deployment/gunicorn.conf.py mama.app:app
