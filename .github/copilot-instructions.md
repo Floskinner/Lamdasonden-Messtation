@@ -3,8 +3,8 @@
 ## Project Overview
 MAMA is a Raspberry Pi-based real-time lambda (oxygen) sensor monitoring system for automotive diagnostics. It reads analog sensor data via MCP3008 ADC, calculates air-fuel ratios (AFR), and streams data to a web interface using Flask-SocketIO with WebSocket communication.
 
-**Hardware**: Raspberry Pi Zero W, MCP3008 ADC (SPI interface), Type-K thermocouples, wideband lambda sensors  
-**Production deployment**: systemd service running Gunicorn with eventlet workers on port 80  
+**Hardware**: Raspberry Pi Zero W, MCP3008 ADC (SPI interface), Type-K thermocouples, wideband lambda sensors
+**Production deployment**: systemd service running Gunicorn with eventlet workers on port 80
 **Development mode**: Flask dev server on port 8080 with mock sensor data
 
 ## Architecture Patterns

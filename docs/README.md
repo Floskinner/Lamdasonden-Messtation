@@ -17,7 +17,7 @@ Da der Pi W kein Ethernet anschluss besitzt, muss dem Pi zuvor die WLAN Konfigur
 Folgende Software muss installiert werden:
 - Python 3.7
 - pip
-- dnsmasq 
+- dnsmasq
 - hostapd
 
 ### WLAN
@@ -25,7 +25,7 @@ Damit der Pi sein eigenes WLAN erstellt, kann folgende [Anleitung](https://www.e
 
 ### Python
 Python hat eine virtualenv ([Anleitung](https://bodo-schoenfeld.de/eine-virtuelle-umgebung-fuer-python-erstellen/)) in der alle benötigte Module installiert werden. Alle "requirements" stehen in `requirements.txt`. <br>
-Diese können alle über folgendem Befehel installiert werden 
+Diese können alle über folgendem Befehel installiert werden
 ```bash
 pip install -r requirements.txt
 ```
@@ -44,7 +44,7 @@ Es gibt eine Beispielkonfiguration [`settings_example.json`](settings_example.js
 
 ```json
 {
-    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH 
+    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH
     "KORREKTURFAKTOR_BANK_1": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
     "KORREKTURFAKTOR_BANK_2": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
     "MESSURE_INTERVAL": 0.01, // Messintervall in Sekunden
