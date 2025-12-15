@@ -1,5 +1,5 @@
 """
-Modul das von Gunicorn verwendet wird um den Server zu starten
+Module used by Gunicorn to start the server
 """
 
 import os
@@ -62,6 +62,31 @@ def write_to_systemd(message: str):
     sys.stdout.flush()
 
 
+def is_task_running(task) -> bool:
+    """Check if a background task is still running.
+
+    Handles both standard threads (is_alive) and eventlet greenthreads (dead property).
+
+    Args:
+        task: The background task to check (Thread or EventletThread/GreenThread)
+
+    Returns:
+        bool: True if the task is running, False otherwise
+    """
+    if task is None:
+        return False
+
+    # Standard threading.Thread uses is_alive()
+    if hasattr(task, "is_alive"):
+        return task.is_alive()
+
+    # Eventlet greenthreads use 'dead' property
+    if hasattr(task, "dead"):
+        return not task.dead
+
+    return False
+
+
 def get_is_recording():
     """Returns the current recording state"""
     return IS_RECORDING
@@ -94,7 +119,7 @@ def connected(json: dict):
     write_to_systemd("Client connected")
     CONNECTIONS_COUNTER += 1
 
-    if UPDATE_DATA_THREAD is None or not UPDATE_DATA_THREAD.is_alive():
+    if not is_task_running(UPDATE_DATA_THREAD):
         write_to_systemd("Starting Thread")
         THREAD_STOP_EVENT.clear()
         UPDATE_DATA_THREAD = socketio.start_background_task(
@@ -107,20 +132,20 @@ def connected(json: dict):
             getattr(config, "MESSURE_INTERVAL"),
         )
 
-    if SENOR_LIFETIME_THREAD is None or not SENOR_LIFETIME_THREAD.is_alive():
+    if not is_task_running(SENOR_LIFETIME_THREAD):
         SENOR_LIFETIME_THREAD = socketio.start_background_task(background.update_lifetime, socketio, SENSORS)
 
-    if SENSOR_OVERHEAD_THREAD is None or not SENSOR_OVERHEAD_THREAD.is_alive():
+    if not is_task_running(SENSOR_OVERHEAD_THREAD):
         SENSOR_OVERHEAD_THREAD = socketio.start_background_task(background.check_overheating, socketio, SENSORS)
 
-    if SENSOR_CHECK_ERROR_THREAD is None or not SENSOR_CHECK_ERROR_THREAD.is_alive():
+    if not is_task_running(SENSOR_CHECK_ERROR_THREAD):
         SENSOR_CHECK_ERROR_THREAD = socketio.start_background_task(background.check_tmp_sensor_error_state, socketio)
 
 
 @socketio.on("disconnect")
 def disconnect():
-    """Falls keiner mehr mit dem Socket verbunden ist,
-    werden alle Threads (update Data und aufnahme) gestoppt
+    """When no one is connected to the socket anymore,
+    all threads (update data and recording) are stopped
     """
     global CONNECTIONS_COUNTER
 
@@ -129,7 +154,7 @@ def disconnect():
 
     if CONNECTIONS_COUNTER == 0:
         # Stop Thread
-        # Stop Aufnahme
+        # Stop Recording
         global THREAD_STOP_EVENT
         global IS_RECORDING
 
@@ -141,20 +166,20 @@ def disconnect():
 
 @socketio.on("recording")
 def recording(json: dict):
-    """Startet oder stoppt die Aufnahem von Daten, welche in der db gespeichert werden
+    """Starts or stops the recording of data, which is stored in the db
 
     Args:
-        json (dict): Key ["recording"] mit true oder false
+        json (dict): Key ["recording"] with true or false
     """
     global IS_RECORDING
 
     if json["recording"]:
         IS_RECORDING = True
-        write_to_systemd("start aufnahme")
+        write_to_systemd("start recording")
     else:
-        # stoppen
+        # stop
         IS_RECORDING = False
-        write_to_systemd("stoppe Aufnahme")
+        write_to_systemd("stop recording")
 
 
 def main():

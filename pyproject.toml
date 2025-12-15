@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mama = "mama.app:main"
+mama = "mama.__main__:main"
 
 [dependency-groups]
 dev = [
