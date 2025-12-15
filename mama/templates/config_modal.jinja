@@ -58,13 +58,13 @@
             <p id="warning" style="color: red; display: none;">!!! Eingabe darf nur bei einer Neukalibrierung
                 verändert werden !!!</br>Stelle sicher, dass ein geeignetes Messgerät verwendet wird.</p>
             <br>
-            <label>Bank 1 &#128993</label><br>
+            <label title="Standard: 0.511">Bank 1 &#128993</label><br>
             <input id="correction_bank_1" class="w3-input" style="width:30%" type="text"
-                value="{{ KORREKTURFAKTOR_BANK_1 }}" placeholder="0.511" disabled>
+                value="{{ KORREKTURFAKTOR_BANK_1 }}" placeholder="{{ KORREKTURFAKTOR_BANK_1 }}" disabled>
             <br>
-            <label>Bank 2 &#128308</label><br>
+            <label title="Standard: 0.511">Bank 2 &#128308</label><br>
             <input id="correction_bank_2" class="w3-input" style="width:30%" type="text"
-                value="{{ KORREKTURFAKTOR_BANK_2 }}" placeholder="0.511" disabled>
+                value="{{ KORREKTURFAKTOR_BANK_2 }}" placeholder="{{ KORREKTURFAKTOR_BANK_2 }}" disabled>
         </form>
 
         <div class="w3-container w3-padding-16 w3-border-top modalHeaderFooter">
