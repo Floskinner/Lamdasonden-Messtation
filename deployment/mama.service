@@ -7,9 +7,8 @@ After=network.target
 User=root
 Type=simple
 Restart=always
-WorkingDirectory=/home/pi/lamdaProjekt
-Environment="PATH=/home/pi/lamdaProjekt/.venv/bin"
-ExecStart=/home/pi/lamdaProjekt/.venv/bin/gunicorn -c deployment/gunicorn.conf.py mama.app:app
+WorkingDirectory=/home/pi/mama
+ExecStart=/opt/python312/bin/gunicorn -c deployment/gunicorn.conf.py mama.app:app
 
 [Install]
 WantedBy=multi-user.target
