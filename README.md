@@ -15,19 +15,40 @@ Produkte:
 Da der Pi W kein Ethernet anschluss besitzt, muss dem Pi zuvor die WLAN Konfiguration übergeben werden -> [Anleitung](https://www.dahlen.org/2017/10/raspberry-pi-zero-w-headless-setup/) <br>
 <br>
 Folgende Software muss installiert werden:
-- Python 3.7
+- Python 3.12
 - pip
-- dnsmasq 
+- dnsmasq
 - hostapd
 
 ### WLAN
 Damit der Pi sein eigenes WLAN erstellt, kann folgende [Anleitung](https://www.elektronik-kompendium.de/sites/raspberry-pi/2002171.htm) bis einschließlich "WLAN-Interface konfigurieren" befolgt werden.
 
 ### Python
-Python hat eine virtualenv ([Anleitung](https://bodo-schoenfeld.de/eine-virtuelle-umgebung-fuer-python-erstellen/)) in der alle benötigte Module installiert werden. Alle "requirements" stehen in `requirements.txt`. <br>
-Diese können alle über folgendem Befehel installiert werden 
+This project uses `uv` as package manager. Please see the [uv documentation](https://uv.readthedocs.io/en/latest/) for installation and usage instructions.
+
+TD;LR:
 ```bash
+uv venv
+uv sync
+```
+
+You need to create a virtual environment and install the dependencies and copy these to the raspberry pi. Make sure you create the venv based on arm architecture (e.g. on a raspberry pi).
+
+```bash
+# Create the requirements.txt file
+uv export --no-dev --format requirements.txt -o requirements.txt --no-hashes
+
+# Create the venv with docker (make sure you installed the multi-arch support for docker)
+docker run -it --rm --platform linux/arm/v6 -v $PWD:/home/pi/lamdaProjekt/ -w /home/pi/lamdaProjekt/ python:3.12 /bin/bash
+
+pip install virtualenv
+virtualenv --always-copy .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+exit
+
+# Exit docker and copy the venv to the target device
+scp -r .venv pi@<raspberry-pi-ip>:/home/pi/lamdaProjekt/.venv
 ```
 
 ### Service
@@ -44,7 +65,7 @@ Es gibt eine Beispielkonfiguration [`settings_example.json`](settings_example.js
 
 ```json
 {
-    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH 
+    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH
     "KORREKTURFAKTOR_BANK_1": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
     "KORREKTURFAKTOR_BANK_2": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
     "MESSURE_INTERVAL": 0.01, // Messintervall in Sekunden

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Maybach - Lamdawerte</title>
+
+    <link rel="icon" href="../static/images/maybach_logo_icon_145803.ico">
+
+    <link rel="stylesheet" href="../static/css/w3.css">
+    <link rel="stylesheet" href="../static/css/my.css">
+
+</head>
+
+<body>
+
+    <!-- Oberer Bereich -->
+    <div class="w3-row" style="height: 5%;">
+        <div class="w3-cell" style="padding: 5px;">
+            <button class="w3-button w3-round-large w3-border"
+                onclick="location.href='{{ url_for('main.index') }}';">Home</button>
+        </div>
+        <div class="w3-cell">
+            <button class="w3-button w3-round-large w3-border"
+                onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
+        </div>
+    </div>
+
+    <!-- Mittlerer Bereich -->
+    <div class="w3-cell-row" style="height: 90%;">
+        <table class="w3-table-all" style="margin-top: 5px;">
+            <tr>
+                <td>Version</td>
+                <td colspan="2">{{ os_version }}</td>
+            </tr>
+            <tr>
+                <td>Hostname</td>
+                <td colspan="2">{{ os_name }}</td>
+            </tr>
+            <tr>
+                <td rowspan="3">CPU</td>
+            </tr>
+            <tr>
+                <td>CPU Auslastung</td>
+                <td>{{ os_cpu }} %</td>
+            </tr>
+            <tr>
+                <td>CPU Temperatur</td>
+                <td>{{ os_temperatur }}°C</td>
+            </tr>
+            <tr>
+                <td rowspan="3">RAM</td>
+            </tr>
+            <tr>
+                <td>Gesamter RAM</td>
+                <td>{{ os_ram_total }} MB</td>
+            </tr>
+            <tr>
+                <td>Freier RAM</td>
+                <td>{{ os_ram_available }} MB ({{ os_ram_percent }}%)</td>
+            </tr>
+            <tr>
+                <td rowspan="4">SD-Karte</td>
+            </tr>
+            <tr>
+                <td>Gesamter Speicher</td>
+                <td>{{ os_disk_total }} GB</td>
+            </tr>
+            <tr>
+                <td>Benutzer Speicher</td>
+                <td>{{ os_disk_used }} GB</td>
+            </tr>
+            <tr>
+                <td>Freier Speicher</td>
+                <td>{{ os_disk_free }} GB ({{ os_disk_free_percent }} %)</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+    <!-- Unterer Bereich -->
+    <div class="w3-row w3-center w3-border-top" style="height: 3%; ">
+        &copy; 2021 - {{ current_year }} Florian Glaser
+    </div>
+
+
+</body>
+
+</html>

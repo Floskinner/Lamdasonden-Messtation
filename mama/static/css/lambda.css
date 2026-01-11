@@ -1,0 +1,214 @@
+/* ============================================
+   MOBILE FIRST - Default styles for phones
+   ============================================ */
+
+/* Main container for lambda banks and temperatures */
+.main-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#bankContainer {
+    flex: 3;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#tempContainer {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Individual bank cells - stacked vertically on mobile */
+#bank1,
+#bank2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Temperature cells - side by side, smaller */
+#temp1Container,
+#temp2Container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Bank styling - primary focus */
+.bank {
+    font-size: 2vh;
+    margin: 0;
+}
+
+.lamda {
+    font-size: 8vh;
+    margin: 0.2rem 0;
+}
+
+.afr {
+    font-size: 3vh;
+    margin: 0;
+}
+
+/* Temperature styling - secondary, smaller */
+.tempLabel {
+    font-size: 1.5vh;
+    margin: 0;
+}
+
+.temp {
+    font-size: 4vh;
+    margin: 0.1rem 0;
+}
+
+/* Legend image positioning */
+#bankContainer img.w3-display-bottomright {
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0.25rem;
+    height: auto;
+    max-height: 15%;
+    max-width: 20%;
+    padding: 0;
+}
+
+/* ============================================
+   MOBILE - Small screens (< 550px height)
+   ============================================ */
+@media (max-height: 550px) {
+    .lamda {
+        font-size: 6vh;
+    }
+
+    .afr {
+        font-size: 2.5vh;
+    }
+
+    .bank {
+        font-size: 1.6vh;
+    }
+
+    .temp {
+        font-size: 3vh;
+    }
+
+    .tempLabel {
+        font-size: 1.2vh;
+    }
+}
+
+/* ============================================
+   MOBILE - Taller screens (> 700px height)
+   ============================================ */
+@media (max-width: 767px) and (min-height: 700px) {
+    .lamda {
+        font-size: 9vh;
+    }
+
+    .afr {
+        font-size: 3.5vh;
+    }
+
+    .bank {
+        font-size: 2.2vh;
+    }
+
+    .temp {
+        font-size: 5vh;
+    }
+
+    .tempLabel {
+        font-size: 1.8vh;
+    }
+}
+
+/* ============================================
+   DESKTOP - Side by side layout (>= 768px)
+   ============================================ */
+@media (min-width: 768px) {
+    /* Banks side by side on desktop */
+    #bankContainer {
+        flex-direction: row;
+        flex: 2;
+    }
+
+    #bank1,
+    #bank2 {
+        flex: 1;
+        width: auto;
+    }
+
+    /* Temperatures remain side by side but in a row below */
+    #tempContainer {
+        flex: 1;
+    }
+
+    /* Desktop font sizes using viewport width */
+    .bank {
+        font-size: 1.5vw;
+    }
+
+    .lamda {
+        font-size: 8vw;
+    }
+
+    .afr {
+        font-size: 2.5vw;
+    }
+
+    .tempLabel {
+        font-size: 1.2vw;
+    }
+
+    .temp {
+        font-size: 4vw;
+    }
+
+    /* Legend positioning for desktop */
+    #bankContainer img.w3-display-bottomright {
+        bottom: 0.5rem;
+        right: 0.5rem;
+        max-height: 25%;
+        max-width: 10%;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (>= 1200px)
+   ============================================ */
+@media (min-width: 1200px) {
+    .bank {
+        font-size: 1.2vw;
+    }
+
+    .lamda {
+        font-size: 6vw;
+    }
+
+    .afr {
+        font-size: 2vw;
+    }
+
+    .tempLabel {
+        font-size: 1vw;
+    }
+
+    .temp {
+        font-size: 3vw;
+    }
+}

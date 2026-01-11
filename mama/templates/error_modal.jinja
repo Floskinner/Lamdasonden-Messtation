@@ -1,0 +1,39 @@
+<div id="errorModal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="background-color: rgb(156, 151, 151);">
+
+        <div class="w3-center w3-border-bottom" style="margin-bottom: 20px;"><br>
+            <span onclick="document.getElementById('errorModal').style.display='none'"
+                class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close">&times;</span>
+            <h2><b>ERROR!</b></h2>
+        </div>
+
+        <div class="w3-container">
+            <p>
+                Es ist ein Fehler aufgetreten &#128533;<br />
+                Bitte notiere die Fehlermeldung (Fehlertext kopieren), um spätere Fehlersuche zu vereinfachen
+            </p>
+        </div>
+
+        <div id="errorModalInfoTextDiv" class="w3-container w3-text-amber" style="display: none;">
+            <p><b>Hinweis:</b></p>
+            <p id="errorModalInfoText"></p>
+        </div>
+
+        <div class="w3-container">
+            <p>Fehler:</p>
+            <pre
+                style="background-color: white; overflow-x: auto; padding: 10px;"><code id="errorModalShort"></code></pre>
+        </div>
+
+        <div class="w3-container">
+            <p>Voller Traceback:</p>
+            <pre
+                style="background-color: white; overflow-x: auto; padding: 10px;"><code id="errorModalTraceback"></code></pre>
+        </div>
+
+        <div class="w3-container w3-padding-16">
+            <button type="button" class="w3-button w3-round-large w3-border w3-right w3-red"
+                onclick="document.getElementById('errorModal').style.display='none'">Schließen</button>
+        </div>
+    </div>
+</div>

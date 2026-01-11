@@ -1,26 +1,49 @@
-[tool.poetry]
+[project]
 name = "mama"
-version = "1.0.1"
-description = ""
-authors = ["Florian Glaser <58706771+Floskinner@users.noreply.github.com>"]
+version = "2.0.0"
+description = "Lambda Sensor Measurement Station"
+authors = [{ name = "Florian Glaser", email = "58706771+Floskinner@users.noreply.github.com" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "Flask>=3.1.0,<4",
+    "gunicorn>=23.0.0,<24",
+    "Flask-SocketIO>=5.4.1,<6",
+    "Jinja2>=3.1.4,<4",
+    "psutil>=6.1.0,<7",
+    "requests>=2.32.3,<3",
+    "spidev>=3.6,<4",
+    "eventlet>=0.37.0,<0.38",
+    "python-socketio>=5.11.4,<6",
+    "python-engineio>=4.9.1,<5",
+    "bidict>=0.23.1,<0.24",
+]
 
-[tool.poetry.dependencies]
-python = "3.7.*"
-Flask = "^2.1.2"
-gunicorn = "^20.1.0"
-Flask-SocketIO = "^5.1.2"
-Jinja2 = "^3.1.2"
-psutil = "^5.9.0"
-requests = "^2.27.1"
-spidev = "^3.5"
-eventlet = "0.30.2"
+[project.scripts]
+mama = "mama.__main__:main"
 
-[tool.poetry.dev-dependencies]
-black = "^22.3.0"
-flake8 = "^4.0.1"
-pylint = "^2.13.8"
-pre-commit = "^2.18.1"
+[dependency-groups]
+dev = [
+    "black>=24.10.0,<25",
+    "ruff>=0.8.4,<0.9",
+    "pre-commit>=4.0.1,<5",
+    "pytest>=8.3.4,<9",
+    "commitizen>=4.10.0,<5",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["mama"]
+
+[tool.hatch.build.targets.wheel]
+include = ["mama"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
