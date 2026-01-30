@@ -1,0 +1,14 @@
+# Contents of /etc/systemd/system/lamda.service
+[Unit]
+Description=Service for Lamda-Web
+After=network.target
+
+[Service]
+User=root
+Type=simple
+Restart=always
+WorkingDirectory=/home/pi/mama
+ExecStart=/opt/python312/bin/gunicorn -c deployment/gunicorn.conf.py mama.app:app
+
+[Install]
+WantedBy=multi-user.target
