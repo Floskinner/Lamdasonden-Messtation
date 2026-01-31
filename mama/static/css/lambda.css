@@ -112,6 +112,40 @@
     }
 }
 
+/* Small phones in landscape (e.g. iPhone SE) */
+@media (max-height: 550px) and (orientation: landscape) {
+    #bankContainer {
+        flex-direction: row;
+        flex: 2;
+    }
+
+    #bank1,
+    #bank2 {
+        width: auto;
+    }
+
+    /* Slightly larger values in landscape */
+    .lamda {
+        font-size: 11vh;
+    }
+
+    .afr {
+        font-size: 4vh;
+    }
+
+    .bank {
+        font-size: 2vh;
+    }
+
+    .temp {
+        font-size: 3.5vh;
+    }
+
+    .tempLabel {
+        font-size: 1.4vh;
+    }
+}
+
 /* ============================================
    MOBILE - Taller screens (> 700px height)
    ============================================ */
