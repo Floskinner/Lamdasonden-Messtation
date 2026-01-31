@@ -1,0 +1,171 @@
+<!-- Fullscreen Image Overlay -->
+<div id="fullscreenImageOverlay" class="w3-modal" style="background-color: rgba(0,0,0,0.9); z-index: 10;" onclick="closeFullscreenImage()">
+    <span onclick="closeFullscreenImage()" class="w3-button w3-xlarge w3-hover-red w3-display-topright w3-text-white" title="Close">&times;</span>
+    <div class="w3-modal-content w3-animate-zoom" style="background: transparent; box-shadow: none; max-width: 95%; max-height: 95%; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation()">
+        <img id="fullscreenImage" src="" alt="" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
+    </div>
+</div>
+
+<div id="calibModal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom">
+
+        <div class="w3-center w3-border-bottom modalHeaderFooter"><br>
+            <span onclick="document.getElementById('calibModal').style.display='none'"
+                class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close">&times;</span>
+            <h2>Sondenkalibrierung</h2>
+        </div>
+
+        <div id="calibBody" class="w3-container w3-padding-16 modalBody">
+            <!-- Inhalt wird dynamisch gesetzt -->
+        </div>
+
+        <div class="w3-container w3-padding-16 w3-border-top modalHeaderFooter">
+            <button id="nextStepButton" type="button" class="w3-button w3-round-large w3-border w3-right w3-green"
+                onclick="nextStep()">Weiter</button>
+            <button id="endButton" type="button" class="w3-button w3-round-large w3-border w3-right w3-red" style="margin-right: 1vw"
+                onclick="document.getElementById('calibModal').style.display='none'">Beenden</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    const START_TEXT = `Der Kalibrierungsvorgang setzt voraus, dass sich die Breitband-Lambdasonde <b>in freier Luft</b> und <b>nicht in der Auspuffanlage</b> befindet.<br>
+    Stellen sie zudem sicher, dass sich die MAMA im Batteriemodus befindet (der Knopf an der Seite muss reingedrückt sein).<br><br>
+    Zum Starten der Kalibrierung auf "Weiter" klicken und den weiteren Anweisungen folgen.<br><br>`;
+
+    const STEP1_TEXT = `Mit <b>NICHT</b> angeschlossener Breitband-Lambdasonde die Spannungversorgung mit dem Kfz-Bordspannungsstecker herstellen:<br>
+    <img src="../static/images/Kfz-Bordspannungsstecker.jpeg" alt="12V Versorgung herstellen" style="max-width: 100%; max-height: 30vh; cursor: pointer;" onclick="openFullscreenImage(this.src, this.alt)">
+    <br><br>
+    Drücken sie auf "Weiter", sobald die Versorgung steht.<br><br>`;
+
+    const RESET_COUNTER_45_TEXT = (remainingSeconds) => `Bitte warten… Die aktuelle Kalibrierung wird gelöscht<br><br>
+    Wartezeit bis zum nächsten Schritt: <b>${remainingSeconds}</b> s`;
+
+    const STEP2_TEXT = `1. Trennen sie den Kfz-Bordspannungsstecker.<br>
+    2. Verbinden sie die Breitband-Lambdasonde mit der MAMA.<br>
+    3. Stellen sie nochmals sicher, dass die Breitband-Lambdasonde <b>NICHT</b> in der Auspuffanlage steckt.<br>
+    4. Stellen sie die Spannungversorgung mit dem Kfz-Bordspannungsstecker wieder her.<br><br>
+    Drücken sie auf "Weiter", sobald die Versorgung steht.<br><br>`;
+
+    const HEAT_CALIB_90_TEXT = (remainingSeconds) => `Bitte warten… Breitband-Lambdasonde wird aufgeheizt und kalibriert<br><br>
+    Wartezeit bis zum nächsten Schritt: <b>${remainingSeconds}</b> s`;
+
+    const STEP3_TEXT = `Die Kalibrierung ist abgeschlossen!<br><br>
+    Sie können die Breitband-Lambdasonde jetzt in die Auspuffanlage einbauen. <br>
+    Nach dem erneuten Trennen der Spannungsversorgung muss die Breitband-Lambdasonde beim Wiedereinschalten angeschlossen sein,
+    da andernfalls eine erneute Kalibrierung erforderlich ist.`;
+
+    // Dynamic steps:
+    // - { type: "text", html: string, showNextButton?: boolean }
+    // - { type: "timer", seconds: number, html: (remainingSeconds) => string }
+    const STEPS = [
+        { type: "text", html: START_TEXT },
+        { type: "text", html: STEP1_TEXT },
+        { type: "timer", seconds: 45, html: RESET_COUNTER_45_TEXT },
+        { type: "text", html: STEP2_TEXT },
+        { type: "timer", seconds: 90, html: HEAT_CALIB_90_TEXT },
+        { type: "text", html: STEP3_TEXT, showNextButton: false },
+    ];
+
+    let currentStep = 0;
+    let countdownIntervalId = null;
+
+    function openCalib() {
+        calibModal.css("display", "block");
+        resetCalib();
+    }
+
+    function resetCalib() {
+        stopCountdown();
+        currentStep = 0;
+        renderStep();
+    }
+
+    function nextStep() {
+        stopCountdown();
+
+        currentStep++;
+        if (currentStep >= STEPS.length) {
+            currentStep = STEPS.length - 1;
+        }
+
+        renderStep();
+    }
+
+    function renderStep() {
+        stopCountdown();
+
+        const step = STEPS[currentStep];
+        if (!step) {
+            return;
+        }
+
+        if (step.type === "text") {
+            document.getElementById("calibBody").innerHTML = step.html;
+
+            $("#endButton").css("display", "inline-block");
+            if (step.showNextButton === false) {
+                $("#nextStepButton").css("display", "none");
+            } else {
+                $("#nextStepButton").css("display", "inline-block");
+            }
+
+            return;
+        }
+        else if (step.type === "timer") {
+            $("#nextStepButton").css("display", "none");
+            $("#endButton").css("display", "none");
+            startCountdown(step.seconds, step.html);
+            return;
+        }
+        else {
+            console.error("Unknown step type:", step);
+        }
+
+    }
+
+    function startCountdown(totalSeconds, htmlFn) {
+        let remainingSeconds = Number(totalSeconds);
+        if (!Number.isFinite(remainingSeconds) || remainingSeconds < 0) {
+            remainingSeconds = 0;
+        }
+
+        const renderCountdown = () => {
+            document.getElementById("calibBody").innerHTML = htmlFn(remainingSeconds);
+        };
+
+        renderCountdown();
+        countdownIntervalId = window.setInterval(() => {
+            remainingSeconds -= 1;
+            if (remainingSeconds <= 0) {
+                remainingSeconds = 0;
+                renderCountdown();
+                stopCountdown();
+                nextStep();
+                return;
+            }
+
+            renderCountdown();
+        }, 1000);
+    }
+
+    function stopCountdown() {
+        if (countdownIntervalId !== null) {
+            window.clearInterval(countdownIntervalId);
+            countdownIntervalId = null;
+        }
+    }
+
+    function openFullscreenImage(src, alt) {
+        document.getElementById("fullscreenImage").src = src;
+        document.getElementById("fullscreenImage").alt = alt;
+        document.getElementById("fullscreenImageOverlay").style.display = "block";
+    }
+
+    function closeFullscreenImage() {
+        document.getElementById("fullscreenImageOverlay").style.display = "none";
+    }
+
+
+</script>

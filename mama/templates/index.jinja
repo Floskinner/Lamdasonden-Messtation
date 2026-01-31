@@ -18,8 +18,10 @@
 </div>
 
 <div class="header-right">
-    <a id="historyIcon" href="/history" class="w3-bar-item w3-button w3-right fa fa-history"></a>
-    <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears"
+    <i id="calibIcon" class="w3-bar-item w3-button w3-right fa fa-wrench" title="Lambdasonden Kalibrierung"
+        onclick="openCalib()"></i>
+    <a id="historyIcon" href="/history" class="w3-bar-item w3-button w3-right fa fa-history" title="Verlauf"></a>
+    <i id="menueIcon" class="w3-bar-item w3-button w3-right fa fa-gears" title="Einstellungen"
         onclick="openMenue()"></i>
 </div>
 
@@ -31,8 +33,9 @@
 
 {% include "temperaturen.jinja" %}
 
-<!-- Config Modal -->
+<!-- Modals -->
 {% include "config_modal.jinja" %}
+{% include "calibration_modal.jinja" %}
 
 {% endblock %}
 
@@ -48,6 +51,14 @@
 
     const UPDATE_INTERVALL = {{ update_intervall }};
     const menueModal = $("#menueModal");
+    const calibModal = $("#calibModal");
+
+    {% if RECALIBRATION_NEEDED %}
+    // automatically open calibration modal if recalibration is needed
+    $(document).ready(function () {
+        openCalib();
+    });
+    {% endif %}
 
     $(document).ready(function () {
         $("#recording").click(toogleRecording);
