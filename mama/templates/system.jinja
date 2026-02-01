@@ -1,92 +1,108 @@
-<!DOCTYPE html>
-<html lang="de">
+{% extends "base.jinja" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}System{% endblock title %}
 
-    <title>Maybach - Lamdawerte</title>
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="../static/css/system.css">
+{% endblock head %}
 
-    <link rel="icon" href="../static/images/maybach_logo_icon_145803.ico">
+{% block pageNavbar %}
 
-    <link rel="stylesheet" href="../static/css/w3.css">
-    <link rel="stylesheet" href="../static/css/my.css">
+<a href="/" class="header-left w3-button fa fa-arrow-left"></a>
 
-</head>
+<div class="header-right">
+    <a href="{{ url_for('system.system_diagnostics') }}" class="w3-bar-item w3-button w3-right fa fa-download"
+        title="Download Diagnostic"></a>
+</div>
 
-<body>
+{{ super() }}
+{% endblock pageNavbar %}
 
-    <!-- Oberer Bereich -->
-    <div class="w3-row" style="height: 5%;">
-        <div class="w3-cell" style="padding: 5px;">
-            <button class="w3-button w3-round-large w3-border"
-                onclick="location.href='{{ url_for('main.index') }}';">Home</button>
+{% block main %}
+
+<div class="system-page">
+    <div class="system-container">
+        <!-- Header -->
+        <div class="system-header">
+            <h2 class="system-title"><b>System</b></h2>
         </div>
-        <div class="w3-cell">
-            <button class="w3-button w3-round-large w3-border"
-                onclick="location.href='http://192.168.1.1:3000/d/pyXFX0gRk/lamdawerte?orgId=1';">History</button>
+
+        <!-- System Info (Version & Hostname) -->
+        <div class="system-info">
+            <div class="system-info-row">
+                <span class="system-info-label">Version</span>
+                <span class="system-info-value">{{ os_version }}</span>
+            </div>
+            <div class="system-info-row">
+                <span class="system-info-label">Hostname</span>
+                <span class="system-info-value">{{ os_name }}</span>
+            </div>
+        </div>
+
+        <!-- CPU and RAM Cards Side by Side -->
+        <div class="stats-grid">
+            <!-- CPU Card -->
+            <div class="stat-card">
+                <div class="stat-card-header">CPU</div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ os_cpu | round(1) }}%</div>
+                    <div class="stat-label">Usage</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ os_temperatur | round(1) }}°C</div>
+                    <div class="stat-label">Temp</div>
+                </div>
+            </div>
+
+            <!-- RAM Card -->
+            <div class="stat-card">
+                <div class="stat-card-header">RAM</div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ os_ram_percent | round(1) }}%</div>
+                    <div class="stat-label">Used</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ (os_ram_available / 1024) | round(1) }}GB</div>
+                    <div class="stat-label">Free</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage Card (Full Width) -->
+        <div class="storage-card">
+            <div class="storage-header">SD Card</div>
+            <div class="storage-stats">
+                <div class="storage-item">
+                    <div class="stat-value">{{ os_disk_total }}GB</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="storage-item">
+                    <div class="stat-value">{{ os_disk_used }}GB</div>
+                    <div class="stat-label">Used</div>
+                </div>
+                <div class="storage-item">
+                    <div class="stat-value">{{ os_disk_free }}GB</div>
+                    <div class="stat-label">Free</div>
+                </div>
+            </div>
+            <!-- Storage usage bar -->
+            <div class="storage-bar-container">
+                {% set used_percent = 100 - os_disk_free_percent %}
+                <div class="storage-bar">
+                    <div class="storage-bar-fill {% if used_percent > 90 %}danger{% elif used_percent > 75 %}warning{% endif %}"
+                         style="width: {{ used_percent | round(1) }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Action -->
+        <div class="system-actions">
+            <a class="w3-button w3-round-large w3-border w3-green" href="{{ url_for('system.system_diagnostics') }}">
+                Download Diagnostic
+            </a>
         </div>
     </div>
+</div>
 
-    <!-- Mittlerer Bereich -->
-    <div class="w3-cell-row" style="height: 90%;">
-        <table class="w3-table-all" style="margin-top: 5px;">
-            <tr>
-                <td>Version</td>
-                <td colspan="2">{{ os_version }}</td>
-            </tr>
-            <tr>
-                <td>Hostname</td>
-                <td colspan="2">{{ os_name }}</td>
-            </tr>
-            <tr>
-                <td rowspan="3">CPU</td>
-            </tr>
-            <tr>
-                <td>CPU Auslastung</td>
-                <td>{{ os_cpu }} %</td>
-            </tr>
-            <tr>
-                <td>CPU Temperatur</td>
-                <td>{{ os_temperatur }}°C</td>
-            </tr>
-            <tr>
-                <td rowspan="3">RAM</td>
-            </tr>
-            <tr>
-                <td>Gesamter RAM</td>
-                <td>{{ os_ram_total }} MB</td>
-            </tr>
-            <tr>
-                <td>Freier RAM</td>
-                <td>{{ os_ram_available }} MB ({{ os_ram_percent }}%)</td>
-            </tr>
-            <tr>
-                <td rowspan="4">SD-Karte</td>
-            </tr>
-            <tr>
-                <td>Gesamter Speicher</td>
-                <td>{{ os_disk_total }} GB</td>
-            </tr>
-            <tr>
-                <td>Benutzer Speicher</td>
-                <td>{{ os_disk_used }} GB</td>
-            </tr>
-            <tr>
-                <td>Freier Speicher</td>
-                <td>{{ os_disk_free }} GB ({{ os_disk_free_percent }} %)</td>
-            </tr>
-
-        </table>
-
-    </div>
-
-    <!-- Unterer Bereich -->
-    <div class="w3-row w3-center w3-border-top" style="height: 3%; ">
-        &copy; 2021 - {{ current_year }} Florian Glaser
-    </div>
-
-
-</body>
-
-</html>
+{% endblock %}
