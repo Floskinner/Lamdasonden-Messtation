@@ -4,7 +4,7 @@ Infos über den Pi bekommen
 
 import platform
 import socket
-
+from pathlib import Path
 import psutil
 
 
@@ -90,3 +90,9 @@ def get_disk_info() -> dict:
     data = {"total": disk_total, "used": disk_used, "free": disk_free, "percent": disk_free_percent}
 
     return data
+
+
+def get_systemd_journal() -> Path:
+    """Returns default path to systemd journal log file"""
+    persistent_journal_path = Path("/var/log/journal")
+    return persistent_journal_path if persistent_journal_path.exists() else Path("/run/log/journal")

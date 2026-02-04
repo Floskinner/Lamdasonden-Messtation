@@ -3,6 +3,8 @@
 import datetime
 from flask import Blueprint
 from flask import render_template
+from flask import send_file
+from mama.utils.diagnostics import diagnostic_tar
 
 from mama.utils import raspi_status as pi
 
@@ -31,3 +33,15 @@ def system():
     }
 
     return render_template("system.jinja", **system_data)
+
+
+@system_bp.route("/system/diagnostics")
+def system_diagnostics():
+    """Generate a diagnostics tarball and send it as a downloadable file"""
+    with diagnostic_tar() as tar_path:
+        return send_file(
+            tar_path,
+            mimetype="application/gzip",
+            as_attachment=True,
+            download_name="diagnostics.tar.gz",
+        )
