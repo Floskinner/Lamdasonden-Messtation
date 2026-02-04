@@ -27,7 +27,7 @@ class MCP3008:
 
 
 class TestMCP3008:
-    def __init__(self, offset_value: int = 1, min_value: int = 0, max_value: int = 1):
+    def __init__(self, offset_value: int = 1, min_value: int = 0, max_value: int = 1023):
         self.current_value = min_value
         self.offset_sum = offset_value + random.randint(1, 3)
         self.min_value = min_value

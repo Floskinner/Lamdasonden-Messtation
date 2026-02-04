@@ -13,6 +13,12 @@ const MAX_LAMBDA_BELOW_RED = 0.80;
 const MAX_TEMP_ABOVE_ORANGE = 600;
 const MAX_TEMP_ABOVE_RED = 850;
 
+const MAX_SHOWN_LAMBDA_LIMIT = 1.500
+const MIN_SHOWN_LAMBDA_LIMIT = 0.550
+
+const MAX_SHOWN_AFR_LIMIT = 21.0
+const MIN_SHOWN_AFR_LIMIT = 8.09
+
 let hinweis_queue = [];
 
 let blinking = undefined;
@@ -41,12 +47,12 @@ socket.on("disconnect", (reason) => {
 
 
 socket.on('newValues', function (values) {
-    // console.log(JSON.stringify(values));
+    console.log(JSON.stringify(values));
 
-    const lamda1 = values.lamda1;
-    const lamda2 = values.lamda2;
-    const afr1 = values.afr1;
-    const afr2 = values.afr2;
+    const lamda1 = Math.max(Math.min(values.lamda1, MAX_SHOWN_LAMBDA_LIMIT), MIN_SHOWN_LAMBDA_LIMIT);
+    const lamda2 = Math.max(Math.min(values.lamda2, MAX_SHOWN_LAMBDA_LIMIT), MIN_SHOWN_LAMBDA_LIMIT);
+    const afr1 = Math.max(Math.min(values.afr1, MAX_SHOWN_AFR_LIMIT), MIN_SHOWN_AFR_LIMIT);
+    const afr2 = Math.max(Math.min(values.afr2, MAX_SHOWN_AFR_LIMIT), MIN_SHOWN_AFR_LIMIT);
     const temp1 = values.temp1;
     const temp2 = values.temp2;
 
@@ -58,10 +64,10 @@ socket.on('newValues', function (values) {
     applyWarningColorsTemp($("#temp1"), temp1);
     applyWarningColorsTemp($("#temp2"), temp2);
 
-    if ((lamda1 >= MAX_LAMBDA_ABOVE_RED || lamda1 <= MAX_LAMBDA_BELOW_RED) && blinking) {
+    if ((lamda1 >= MAX_LAMBDA_ABOVE_RED || lamda1 <= MAX_LAMBDA_BELOW_RED) && blinking && !(lamda1 >= MAX_SHOWN_LAMBDA_LIMIT || lamda1 <= MIN_SHOWN_LAMBDA_LIMIT)) {
         applyRedBlinking($("#lamda1"));
     }
-    if ((lamda2 >= MAX_LAMBDA_ABOVE_RED || lamda2 <= MAX_LAMBDA_BELOW_RED) && blinking) {
+    if ((lamda2 >= MAX_LAMBDA_ABOVE_RED || lamda2 <= MAX_LAMBDA_BELOW_RED) && blinking && !(lamda2 >= MAX_SHOWN_LAMBDA_LIMIT || lamda2 <= MIN_SHOWN_LAMBDA_LIMIT)) {
         applyRedBlinking($("#lamda2"));
     }
 });
