@@ -31,7 +31,9 @@
 <script type="text/javascript">
 
     const START_TEXT = `Der Kalibrierungsvorgang setzt voraus, dass sich die Breitband-Lambdasonde <b>in freier Luft</b> und <b>nicht in der Auspuffanlage</b> befindet.<br>
-    Stellen sie zudem sicher, dass sich die MAMA im Batteriemodus befindet (der Knopf an der Seite muss reingedrückt sein).<br><br>
+    Stellen sie zudem sicher, dass sich die M.A.M.A im Batteriemodus befindet (der Schalter muss betätigt sein):<br>
+    <img src="../static/images/power-button.jpeg" alt="M.A.M.A im Batteriemodus" style="max-width: 100%; max-height: 30vh; cursor: pointer;" onclick="openFullscreenImage(this.src, this.alt)">
+    <br><br>
     Zum Starten der Kalibrierung auf "Weiter" klicken und den weiteren Anweisungen folgen.<br><br>`;
 
     const STEP1_TEXT = `Mit <b>NICHT</b> angeschlossener Breitband-Lambdasonde die Spannungversorgung mit dem Kfz-Bordspannungsstecker herstellen:<br>
@@ -42,8 +44,9 @@
     const RESET_COUNTER_45_TEXT = (remainingSeconds) => `Bitte warten… Die aktuelle Kalibrierung wird gelöscht<br><br>
     Wartezeit bis zum nächsten Schritt: <b>${remainingSeconds}</b> s`;
 
-    const STEP2_TEXT = `1. Trennen sie den Kfz-Bordspannungsstecker.<br>
-    2. Verbinden sie die Breitband-Lambdasonde mit der MAMA.<br>
+    const STEP2_TEXT = `1. Trennen sie den Kfz-Bordspannungsstecker:<br>
+    <img src="../static/images/Kfz-Bordspannungsstecker.jpeg" alt="12V Versorgung trennen" style="max-width: 100%; max-height: 15vh; cursor: pointer;" onclick="openFullscreenImage(this.src, this.alt)"><br>
+    2. Verbinden sie die Breitband-Lambdasonde mit der M.A.M.A.<br>
     3. Stellen sie nochmals sicher, dass die Breitband-Lambdasonde <b>NICHT</b> in der Auspuffanlage steckt.<br>
     4. Stellen sie die Spannungversorgung mit dem Kfz-Bordspannungsstecker wieder her.<br><br>
     Drücken sie auf "Weiter", sobald die Versorgung steht.<br><br>`;
@@ -52,9 +55,13 @@
     Wartezeit bis zum nächsten Schritt: <b>${remainingSeconds}</b> s`;
 
     const STEP3_TEXT = `Die Kalibrierung ist abgeschlossen!<br><br>
-    Sie können die Breitband-Lambdasonde jetzt in die Auspuffanlage einbauen. <br>
-    Nach dem erneuten Trennen der Spannungsversorgung muss die Breitband-Lambdasonde beim Wiedereinschalten angeschlossen sein,
-    da andernfalls eine erneute Kalibrierung erforderlich ist.`;
+    Bauen sie die Breitband-Lambdasonde mit folgenden 5 Schritten ein:<br>
+    1. Trennen sie die Spannungsversorgung mit dem Kfz-Bordspannungsstecker: <br>
+    <img src="../static/images/Kfz-Bordspannungsstecker.jpeg" alt="12V Versorgung herstellen" style="max-width: 100%; max-height: 15vh; cursor: pointer;" onclick="openFullscreenImage(this.src, this.alt)"><br>
+    2. Trennen sie die Verbindung der Breitband-Lambdasonde von der M.A.M.A.<br>
+    3. Bauen sie die Breitband-Lambdasonde in die Auspuffanlage ein.<br>
+    4. Verbinden sie die Breitband-Lambdasonde wieder mit der M.A.M.A.<br>
+    5. Stellen sie die Spannungversorgung mit dem Kfz-Bordspannungsstecker wieder her.`;
 
     // Dynamic steps:
     // - { type: "text", html: string, showNextButton?: boolean }
