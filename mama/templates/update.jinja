@@ -1,0 +1,336 @@
+{% extends "base.jinja" %}
+
+{% block title %}Update{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="../static/css/update.css">
+{% endblock head %}
+
+{% block pageNavbar %}
+
+<a href="/" class="header-left w3-button fa fa-arrow-left"></a>
+
+<div class="header-right">
+</div>
+
+{{ super() }}
+{% endblock pageNavbar %}
+
+{% block main %}
+
+<div class="update-page">
+    <div class="update-container">
+        <!-- Header -->
+        <div class="update-header">
+            <h2 class="update-title"><b>Systemaktualisierung</b></h2>
+            <p class="update-subtitle">Upload .tar.gz</p>
+        </div>
+
+        <!-- Upload Card -->
+        <div class="upload-card">
+            <div class="upload-card-header">Update-Datei hochladen</div>
+
+            <!-- File Input Area -->
+            <div class="upload-area" id="uploadArea">
+                <i class="fa fa-cloud-upload upload-icon"></i>
+                <p class="upload-text">Wähle oder ziehe eine .tar.gz Datei</p>
+                <input type="file" id="fileInput" accept=".tar.gz,.gz" class="file-input">
+                <label for="fileInput" class="file-label w3-button w3-round-large w3-border">
+                    Datei auswählen
+                </label>
+                <p id="fileName" class="file-name"></p>
+            </div>
+
+            <!-- Progress Bar (hidden initially) -->
+            <div id="progressSection" class="progress-section" style="display: none;">
+                <div class="progress-label">
+                    <span>Hochladen...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="storage-bar">
+                    <div id="progressBar" class="storage-bar-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Validation Spinner (hidden initially) -->
+            <div id="validationSection" class="validation-section" style="display: none;">
+                <i class="fa fa-spinner fa-spin validation-spinner"></i>
+                <span class="validation-text">Update-Datei wird validiert...</span>
+            </div>
+
+            <!-- Success Indicator (hidden initially) -->
+            <div id="successSection" class="success-section" style="display: none;">
+                <i class="fa fa-check-circle success-icon"></i>
+                <span class="success-text">Datei erfolgreich hochgeladen und validiert!</span>
+            </div>
+
+            <!-- Upload Button -->
+            <button id="uploadBtn" class="w3-button w3-round-large w3-border w3-green upload-btn" disabled>
+                <i class="fa fa-upload"></i> Hochladen
+            </button>
+        </div>
+
+        <!-- Start Update Card (hidden initially) -->
+        <div id="startUpdateCard" class="upload-card" style="display: none;">
+            <div class="upload-card-header">Update starten</div>
+
+            <div class="update-warning">
+                <i class="fa fa-exclamation-triangle warning-icon"></i>
+                <p>Die Anwendung wird nach Abschluss des Updates neu gestartet. Alle aktiven Verbindungen werden geschlossen.</p>
+            </div>
+
+            <button id="startUpdateBtn" class="w3-button w3-round-large w3-border w3-amber start-update-btn">
+                <i class="fa fa-rocket"></i> Update starten
+            </button>
+        </div>
+
+        <!-- Update Started Notification (hidden initially) -->
+        <div id="updateNotification" class="update-notification" style="display: none;">
+            <i class="fa fa-cog fa-spin notification-icon"></i>
+            <p class="notification-title">Update wird ausgeführt...</p>
+            <p class="notification-text">Die Anwendung wird automatisch neu gestartet. Bitte warten...</p>
+        </div>
+
+        <!-- Update Completed Success Notification -->
+        {% if update_status and update_status.status == 'success' %}
+        <div id="updateCompletedNotification" class="update-completed-notification">
+            <i class="fa fa-check-circle completed-icon"></i>
+            <p class="completed-title">Update erfolgreich abgeschlossen!</p>
+            <p class="completed-text">Das System wurde aktualisiert und neu gestartet.</p>
+            <button class="w3-button w3-round-large w3-border w3-green dismiss-btn" onclick="window.location.href='/'">
+                <i class="fa fa-thumbs-up"></i> OK
+            </button>
+        </div>
+        {% endif %}
+
+        <!-- Update Error Notification -->
+        {% if update_status and update_status.status == 'error' %}
+        <div id="updateErrorNotification" class="update-error-notification">
+            <i class="fa fa-times-circle error-icon"></i>
+            <p class="error-title">Update fehlgeschlagen!</p>
+            <p class="error-text">{{ update_status.error }}</p>
+            {% if update_status.traceback %}
+            <details class="error-details">
+                <summary>Traceback anzeigen</summary>
+                <pre class="error-traceback">{{ update_status.traceback }}</pre>
+            </details>
+            {% endif %}
+            <button class="w3-button w3-round-large w3-border w3-red dismiss-btn" onclick="document.getElementById('updateErrorNotification').style.display='none'">
+                <i class="fa fa-times"></i> Schliessen
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block pageJavaScript %}
+<script type="text/javascript" charset="utf-8">
+
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadArea = document.getElementById('uploadArea');
+    const progressSection = document.getElementById('progressSection');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    const validationSection = document.getElementById('validationSection');
+    const successSection = document.getElementById('successSection');
+    const startUpdateCard = document.getElementById('startUpdateCard');
+    const startUpdateBtn = document.getElementById('startUpdateBtn');
+    const updateNotification = document.getElementById('updateNotification');
+
+    // File selection handler
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileName.textContent = this.files[0].name;
+            uploadBtn.disabled = false;
+            // Reset any previous state
+            resetUploadState();
+        } else {
+            fileName.textContent = '';
+            uploadBtn.disabled = true;
+        }
+    });
+
+    // Drag and drop support
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            fileName.textContent = files[0].name;
+            uploadBtn.disabled = false;
+            resetUploadState();
+        }
+    });
+
+    function resetUploadState() {
+        progressSection.style.display = 'none';
+        validationSection.style.display = 'none';
+        successSection.style.display = 'none';
+        startUpdateCard.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0%';
+    }
+
+    function showError(shortError, fullTraceback) {
+        document.getElementById('errorModalShort').textContent = shortError;
+        document.getElementById('errorModalTraceback').textContent = fullTraceback || 'Kein Traceback verfuegbar';
+        document.getElementById('errorModal').style.display = 'block';
+    }
+
+    // Upload button handler
+    uploadBtn.addEventListener('click', function() {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        // Show progress section
+        uploadArea.style.display = 'none';
+        progressSection.style.display = 'block';
+        uploadBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+
+        // Progress handler
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percent + '%';
+                progressPercent.textContent = percent + '%';
+            }
+        });
+
+        // Load complete handler
+        xhr.addEventListener('load', function() {
+            // Hide progress, show validation
+            progressSection.style.display = 'none';
+            validationSection.style.display = 'flex';
+
+            // Short delay for visual feedback
+            setTimeout(function() {
+                validationSection.style.display = 'none';
+
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Show success
+                        successSection.style.display = 'flex';
+                        startUpdateCard.style.display = 'block';
+                    } else {
+                        showError(response.error, response.traceback);
+                        uploadArea.style.display = 'block';
+                        uploadBtn.disabled = false;
+                    }
+                } else {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        showError(response.error, response.traceback);
+                    } catch (e) {
+                        showError('Hochladen fehlgeschlagen: ' + xhr.statusText, '');
+                    }
+                    uploadArea.style.display = 'block';
+                    uploadBtn.disabled = false;
+                }
+            }, 500);
+        });
+
+        // Error handler
+        xhr.addEventListener('error', function() {
+            progressSection.style.display = 'none';
+            validationSection.style.display = 'none';
+            showError('Netzwerkfehler beim Hochladen', '');
+            uploadArea.style.display = 'block';
+            uploadBtn.disabled = false;
+        });
+
+        xhr.open('POST', '/update/upload');
+        xhr.send(formData);
+    });
+
+    // Start update button handler
+    startUpdateBtn.addEventListener('click', function() {
+        startUpdateBtn.disabled = true;
+        startUpdateBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Starten...';
+
+        // Show update notification immediately - we expect the server to restart
+        startUpdateCard.style.display = 'none';
+        successSection.style.display = 'none';
+        updateNotification.style.display = 'block';
+
+        $.ajax({
+            type: 'POST',
+            url: '/update/start',
+            dataType: 'json',
+            success: function(response) {
+                // This is unlikely to be reached as the server restarts
+                startServerPing();
+            },
+            error: function(xhr) {
+                // Connection error is expected during update (server restarts)
+                // Only show error if we got a real error response from the server
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    updateNotification.style.display = 'none';
+                    showError(xhr.responseJSON.error, xhr.responseJSON.traceback || '');
+                    startUpdateBtn.disabled = false;
+                    startUpdateBtn.innerHTML = '<i class="fa fa-rocket"></i> Update starten';
+                    startUpdateCard.style.display = 'block';
+                } else {
+                    // Server probably restarted - start pinging after delay
+                    startServerPing();
+                }
+            }
+        });
+    });
+
+    // Ping server to check if it's back online after update
+    function startServerPing() {
+        const initialDelay = 15000; // 15 seconds before first ping
+        const pingInterval = 3000;  // 3 seconds between pings
+
+        // Update notification text to show we're waiting
+        document.querySelector('.notification-text').textContent =
+            'Warten auf Neustart des Servers... Die Seite wird automatisch aktualisiert.';
+
+        setTimeout(function() {
+            pingServer(pingInterval);
+        }, initialDelay);
+    }
+
+    function pingServer(interval) {
+        $.ajax({
+            type: 'GET',
+            url: '/update/health',
+            timeout: 5000,
+            success: function() {
+                // Server is back online - reload the page to show status
+                window.location.reload();
+            },
+            error: function() {
+                // Server still down - try again
+                setTimeout(function() {
+                    pingServer(interval);
+                }, interval);
+            }
+        });
+    }
+
+</script>
+{% endblock pageJavaScript %}

@@ -14,6 +14,7 @@ from mama.routes.api import api_bp
 from mama.routes.main import main_bp
 from mama.routes.settings import settings_bp
 from mama.routes.system import system_bp
+from mama.routes.update import update_bp
 from mama.sensors.lamda_sensor import LambdaSensor
 from mama.sensors.temp_sensor import TypKTemperaturSensor
 from mama.tasks import background
@@ -27,6 +28,7 @@ app.register_blueprint(main_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(system_bp)
+app.register_blueprint(update_bp)
 
 # Initialize sensors
 LAMDA_SENSOR0 = LambdaSensor(channel=getattr(config, "LAMDA0_CHANNEL"), correction_factor_key="KORREKTURFAKTOR_BANK_1")

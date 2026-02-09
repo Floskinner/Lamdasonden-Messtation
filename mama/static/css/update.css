@@ -1,0 +1,364 @@
+/* Update page styling - Mobile first approach */
+
+.update-page {
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.update-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.update-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.update-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+}
+
+.update-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--main-color-dark);
+}
+
+/* Upload Card */
+.upload-card {
+    background-color: var(--main-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.upload-card-header {
+    background-color: var(--main-color-dark);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--main-color-dark);
+    border-radius: 8px;
+    padding: 24px 16px;
+    text-align: center;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    margin-bottom: 16px;
+}
+
+.upload-area.dragover {
+    border-color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: var(--main-color-dark);
+    margin-bottom: 12px;
+}
+
+.upload-text {
+    margin: 0 0 16px;
+    color: var(--main-color-dark);
+    font-size: 0.9rem;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    cursor: pointer;
+    display: inline-block;
+    background-color: var(--main-color-light);
+}
+
+.file-label:hover {
+    background-color: var(--main-color-dark);
+    color: white;
+}
+
+.file-name {
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+    color: #333;
+    word-break: break-all;
+    min-height: 1.2em;
+}
+
+/* Progress Section */
+.progress-section {
+    margin-bottom: 16px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    color: var(--main-color-dark);
+}
+
+/* Reuse storage-bar styles from system.css */
+.storage-bar {
+    height: 8px;
+    background-color: var(--main-color-light);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.storage-bar-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+
+/* Validation Section */
+.validation-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.validation-spinner {
+    font-size: 1.5rem;
+    color: #2196F3;
+    margin-right: 12px;
+}
+
+.validation-text {
+    font-size: 0.9rem;
+    color: var(--main-color-dark);
+}
+
+/* Success Section */
+.success-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+}
+
+.success-icon {
+    font-size: 1.5rem;
+    color: #4CAF50;
+    margin-right: 12px;
+}
+
+.success-text {
+    font-size: 0.9rem;
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+/* Upload Button */
+.upload-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.upload-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Update Warning */
+.update-warning {
+    background-color: rgba(255, 243, 224, 0.95);
+    border: 1px solid #ff9800;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.warning-icon {
+    font-size: 2rem;
+    color: #e65100;
+    margin-bottom: 8px;
+}
+
+.update-warning p {
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    color: #bf360c;
+    font-weight: 500;
+}
+
+/* Start Update Button */
+.start-update-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.start-update-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Update Notification */
+.update-notification {
+    background-color: var(--main-color);
+    border-radius: 8px;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.notification-icon {
+    font-size: 3rem;
+    color: #2196F3;
+    margin-bottom: 16px;
+}
+
+.notification-title {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.notification-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--main-color-dark);
+}
+
+/* Update Completed Notification */
+.update-completed-notification {
+    background-color: rgba(232, 245, 233, 0.95);
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    padding: 32px 16px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.completed-icon {
+    font-size: 3rem;
+    color: #4CAF50;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.completed-title {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.completed-text {
+    margin: 0 0 16px;
+    font-size: 0.9rem;
+    color: #1b5e20;
+}
+
+.dismiss-btn {
+    padding: 10px 24px;
+    font-weight: 600;
+}
+
+/* Update Error Notification */
+.update-error-notification {
+    background-color: rgba(255, 235, 238, 0.95);
+    border: 2px solid #f44336;
+    border-radius: 8px;
+    padding: 32px 16px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.error-icon {
+    font-size: 3rem;
+    color: #f44336;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.error-title {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #c62828;
+}
+
+.error-text {
+    margin: 0 0 16px;
+    font-size: 0.9rem;
+    color: #b71c1c;
+    word-break: break-word;
+}
+
+.error-details {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.error-details summary {
+    cursor: pointer;
+    color: #c62828;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.error-traceback {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ef9a9a;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #333;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 768px) {
+    .update-page {
+        padding: 24px;
+        align-items: center;
+    }
+
+    .update-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .update-title {
+        font-size: 1.75rem;
+    }
+
+    .upload-area {
+        padding: 32px 24px;
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+    }
+}
