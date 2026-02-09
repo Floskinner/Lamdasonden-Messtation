@@ -19,3 +19,4 @@ settings.json
 MAMA.sqlite
 python312.tar.gz
 wheels/
+*tar.gz

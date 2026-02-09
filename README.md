@@ -1,27 +1,25 @@
-# Dokumentation des Projektes "MAMA" / Lamdasonden-Messtation
-Dies dient zur nachverfolgung und Dokumentation des Projektes<br>
-Logs können mit folgendem Befehl angeschaut werden
+# Documentation of the Project "M.A.M.A" / Lambda Sensor Measurement Station
+This serves for tracking and documentation of the project<br>
+Logs can be viewed with the following command
 ```bash
-sudo journalctl -u lamda.service -f
+sudo journalctl -u mama.service -f
 ```
 
-## Raspberry Pi
-Produkte:
-- Raspberry Pi W mit Header ([buyzero](https://buyzero.de/products/raspberry-pi-zero-wh-mit-bestucktem-header))
-- 16GB microsSD-Karte
+## Hardware
+Products:
+- Raspberry Pi W with Header ([buyzero](https://buyzero.de/products/raspberry-pi-zero-wh-mit-bestucktem-header))
+- 16GB microSD card
 - MCP3008
 
 ## Installation
-Da der Pi W kein Ethernet anschluss besitzt, muss dem Pi zuvor die WLAN Konfiguration übergeben werden -> [Anleitung](https://www.dahlen.org/2017/10/raspberry-pi-zero-w-headless-setup/) <br>
-<br>
-Folgende Software muss installiert werden:
-- Python 3.12
+The following software must be installed:
+- Python 3.12 (use the [deploy script](./deployment/setup.sh))
 - pip
 - dnsmasq
 - hostapd
 
 ### WLAN
-Damit der Pi sein eigenes WLAN erstellt, kann folgende [Anleitung](https://www.elektronik-kompendium.de/sites/raspberry-pi/2002171.htm) bis einschließlich "WLAN-Interface konfigurieren" befolgt werden.
+To set up the Pi to create its own WLAN, the following [Guide](https://www.elektronik-kompendium.de/sites/raspberry-pi/2002171.htm) can be followed up to and including "Configure WLAN Interface".
 
 ### Python
 This project uses `uv` as package manager. Please see the [uv documentation](https://uv.readthedocs.io/en/latest/) for installation and usage instructions.
@@ -32,55 +30,21 @@ uv venv
 uv sync
 ```
 
-You need to create a virtual environment and install the dependencies and copy these to the raspberry pi. Make sure you create the venv based on arm architecture (e.g. on a raspberry pi).
-
-```bash
-# Create the requirements.txt file
-uv export --no-dev --format requirements.txt -o requirements.txt --no-hashes
-
-# Create the venv with docker (make sure you installed the multi-arch support for docker)
-docker run -it --rm --platform linux/arm/v6 -v $PWD:/home/pi/lamdaProjekt/ -w /home/pi/lamdaProjekt/ python:3.12 /bin/bash
-
-pip install virtualenv
-virtualenv --always-copy .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-exit
-
-# Exit docker and copy the venv to the target device
-scp -r .venv pi@<raspberry-pi-ip>:/home/pi/lamdaProjekt/.venv
-```
-
-### Service
-Der Service muss unter `/etc/systemd/system/lamda.service` liegen -> [Anleitung](https://www.raspberrypi.org/documentation/linux/usage/systemd.md). Wichtig hier, dass `Environment="PATH=/home/pi/lamdaProjekt/venv/bin"` dem Pfad entspricht, wo auch die virtualenv ist, damit sichergestellt ist, das auch alle benötigte Packete vorhanden sind.
-
 ### Flask / Gunicorn
-Der Webserver wird mithilfe von [Flask](https://flask.palletsprojects.com/en/1.1.x/) erstellt und mit [Gunicorn](https://docs.gunicorn.org/en/stable/run.html) gehosted (Anleitung auch bei Flask-soketIO). Mithilfe von [Flask-soketIO](https://flask.palletsprojects.com/en/1.1.x/api/#blueprint-objects) wird dann ein Socket erstellt, damit die Daten in "Echtzeit" im Browser erscheinen können. Gunicorn braucht eine `.py`-Datei mit entsprechenden Konfigurationen, die dann beim Service aufruf mit übergebenen werden müssen (`gunicorn.conf.py`)
+The web server is created using [Flask](https://flask.palletsprojects.com/en/1.1.x/) and hosted with [Gunicorn](https://docs.gunicorn.org/en/stable/run.html) (instructions also available for Flask-SocketIO). Using [Flask-SocketIO](https://flask.palletsprojects.com/en/1.1.x/api/#blueprint-objects), a socket is created so that data can appear "real-time" in the browser. Gunicorn requires a `.py` file with appropriate configurations, which must be passed when calling the service (`gunicorn.conf.py`)
 
 ### MCP3008
-Eine Verwendung für den MCP3008 findet man hier -> [Anleitung](https://tutorials-raspberrypi.de/raspberry-pi-mcp3008-analoge-signale-auslesen/)
+Instructions for using the MCP3008 can be found here -> [Guide](https://tutorials-raspberrypi.de/raspberry-pi-mcp3008-analoge-signale-auslesen/)
 
-## Konfigurationen
-Es gibt eine Beispielkonfiguration [`settings_example.json`](settings_example.json). Diese kann als Vorlage verwendet werden und beinhaltet die Initialen ertesteten besten Werte. Wird das ganze Produtktiv verwendet (`FLASK_ENV = "prod"`), so muss eine Datei namens `settings.json` mit den entsprechenden Werten wie in der Beispieldatei vorhanden sein.
-
-```json
-{
-    "AFR_STOCH": 14.68, // Wert zum ausrechnen des AFR = lamda * AFR_STOCH
-    "KORREKTURFAKTOR_BANK_1": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
-    "KORREKTURFAKTOR_BANK_2": 0.511, // Korrekturfaktor des Lamdawertes Bank 1
-    "MESSURE_INTERVAL": 0.01, // Messintervall in Sekunden
-    "UPDATE_INTERVAL": 1.5, // Updateintervall in Sekunden der Anzeige
-    "DB_DELETE_AELTER_ALS": 180, // Löschen in Tage der DB Einträge
-    "ANZEIGEN_BANK_1": true, // Bank 1 wird beim aufruf angezeigt
-    "ANZEIGEN_BANK_2": true, // Bank 2 wird beim aufruf angezeigt
-    "NACHKOMMASTELLEN": 2, // Initiale Anzeige der Nachkommastellen
-    "WARNUNG_BLINKEN": false // Blinken im roten Bereich aktivieren
-}
-```
+## Configuration
+There is a sample configuration [`settings_example.json`](settings_example.json). This can be used as a template and contains the initial tested best values. When used productively (`FLASK_ENV = "prod"`), a file named `settings.json` with the corresponding values as in the example file must be present.
 
 ---
 
-## Randbemerkungen
-- Der Pi wird intern der MAMA direkt mit 5V versorgt
-- Die Uhrzeit vom Pi wird mithilfe vom Browser aktuallisiert, jedes mal wenn man die index.html aufruft
-- SQLite wird als Datenbank verwendet
+## Notes
+- The Pi is powered internally directly by M.A.M.A with 5V
+- The Pi's time is updated using the browser each time the index.html is called
+- SQLite is used as the database for history tracking
+
+## System configurations
+Below the folder `system` are all changed system files. All files inside this folder will be updated / replaced by a self-update.

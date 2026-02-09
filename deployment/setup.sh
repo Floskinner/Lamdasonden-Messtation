@@ -3,7 +3,7 @@
 set -eu
 
 SKIP_PYTHON=${SKIP_PYTHON:-false}
-SKIP_PROJECT=${SKIP_PROJECT:-false}
+COPY_PROJECT=${COPY_PROJECT:-true}
 FORCE_DOCKER_BUILD=${FORCE_DOCKER_BUILD:-false}
 
 create-python() {
@@ -35,16 +35,16 @@ create-python() {
         exit 1
     fi
 
-    echo "Copy artifacts to raspberry pi"
-    rsync -avz --progress wheels/ pi@mama.local:~/mama/wheels/
-    rsync -avz --progress python312.tar.gz pi@mama.local:~/mama/
+    # echo "Copy artifacts to raspberry pi"
+    # rsync -avz --progress wheels/ pi@mama.local:~/mama/wheels/
+    # rsync -avz --progress python312.tar.gz pi@mama.local:~/mama/
 }
 
 
 copy-project-files() {
     echo "Copy project files to raspberry pi"
     ssh pi@mama.local "mkdir -p ~/mama/"
-    rsync -avz --progress --exclude ".git" --exclude "__pycache__" --exclude ".venv" --exclude "MAMA.sqlite" --exclude "settings.json" . pi@mama.local:~/mama/
+    rsync -avz --progress --exclude ".git" --exclude "__pycache__" --exclude ".venv" --exclude "MAMA.sqlite" --exclude "settings.json" --exclude "artifacts" . pi@mama.local:~/mama/
 }
 
 
@@ -53,8 +53,8 @@ for arg in "$@"; do
         --skip-python)
             SKIP_PYTHON=true;
             ;;
-        --skip-project)
-            SKIP_PROJECT=true;
+        --copy-project)
+            COPY_PROJECT=true;
             ;;
         --force-docker-build)
             FORCE_DOCKER_BUILD=true;
@@ -71,7 +71,7 @@ else
     echo "Skipping python creation"
 fi
 
-if [ "$SKIP_PROJECT" = false ]; then
+if [ "$COPY_PROJECT" = true ]; then
     copy-project-files
 else
     echo "Skipping project file copy"
